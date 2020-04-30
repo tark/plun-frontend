@@ -23,7 +23,7 @@ jobs:
 workflows:
     build-and-test:
       jobs:
-        - build-and-test
+        - build_and_test
         - deploy_master:
             filters:
               branches:
