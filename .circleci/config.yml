@@ -29,5 +29,6 @@ workflows:
               branches:
                 only:
                   - master
+                  - circleci-project-setup
             requires:
               - build-and-test
