@@ -1,0 +1,14 @@
+.date {
+  font-weight: bold;
+}
+
+.name {
+  width: 14px;
+  height: 14px;
+}
+
+.period-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+

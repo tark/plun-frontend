@@ -1,0 +1,31 @@
+.task-management-icon {
+  width: 14px;
+  height: 14px;
+  margin-top: 12px;
+  filter: grayscale(100%);
+  opacity: 0.5;
+}
+
+.task {
+  font-size: 1rem;
+}
+
+.task-title {
+  padding-left: 0.3rem;
+  margin-top: 7px;
+  line-height: 1.5rem;
+}
+
+.status-icon {
+  margin: 9px;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.done {
+  color: #4caf50;
+}
+
+.fail {
+  color: #f44336;
+}

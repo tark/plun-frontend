@@ -1,0 +1,7 @@
+.example {
+  /*background-image: url('/mac_safari.png');*/
+  background-size: contain;
+  background-repeat: no-repeat;
+  height: 100vh;
+  width: 100vw;
+}

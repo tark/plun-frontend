@@ -1,0 +1,21 @@
+.text {
+  font-size: 7vh;
+  color: #000000;
+  font-family: 'Open Sans', serif;
+  font-weight: 600;
+}
+
+.message {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10vw;
+}
+/*
+.inner-container {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  display: table;
+}*/

@@ -1,0 +1,15 @@
+.text {
+  font-size: 8vh;
+  color: #000000;
+  font-family: 'Open Sans', serif;
+  font-weight: 600;
+  letter-spacing: -0.1rem;
+}
+
+.message {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10vw;
+}
