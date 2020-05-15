@@ -11,24 +11,33 @@ jobs:
           steps:
             - run: npm install
             - run: npm test
-  deploy-master:
-    executor:
-      name: node/default
+  deploy_master:
+    docker:
+      - image: circleci/node:11.1.0
+
+    working_directory: ~/repo
+
     steps:
-      - checkout
-      - node/with-cache:
-          steps:
-            - run: npm install
-            - run: npm start
+      - add_ssh_keys:
+          fingerprints:
+            - "e9:5e:e3:51:cb:ef:87:9a:03:54:38:30:51:01:91:6d"
+      - run:
+          name: Keyscan deploy server
+          command: ssh-keyscan -H $DEPLOY_SERVER >> ~/.ssh/known_hosts
+      - run:
+          name: Deploy
+          command: |
+            ssh root@$DEPLOY_SERVER 'cd /var/www/html/plun-frontend && git pull'
+
 workflows:
-    build-and-test:
-      jobs:
-        - build-and-test
-        - deploy-master:
-            filters:
-              branches:
-                only:
-                  - master
-                  - circleci-project-setup
-            requires:
-              - build-and-test
+  build-and-test:
+    jobs:
+      - build-and-test
+      - deploy-master:
+          filters:
+            branches:
+              only:
+                - master
+                - circleci-project-setup
+          requires:
+            - build-and-test
