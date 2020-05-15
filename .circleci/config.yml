@@ -18,12 +18,13 @@ jobs:
     working_directory: ~/repo
 
     steps:
+      - checkout
       - add_ssh_keys:
           fingerprints:
             - "e9:5e:e3:51:cb:ef:87:9a:03:54:38:30:51:01:91:6d"
       - run:
           name: Keyscan deploy server
-          command: ssh-keyscan -H $DEPLOY_SERVER >> ~/.ssh/known_hosts
+          command: echo $DEPLOY_SERVER && ssh-keyscan -H $DEPLOY_SERVER >> ~/.ssh/known_hosts
       - run:
           name: Deploy
           command: |
