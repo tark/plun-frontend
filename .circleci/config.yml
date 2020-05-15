@@ -27,8 +27,7 @@ jobs:
           command: echo $DEPLOY_SERVER && ssh-keyscan -H $DEPLOY_SERVER >> ~/.ssh/known_hosts
       - run:
           name: Deploy
-          command: |
-            ssh root@$DEPLOY_SERVER 'cd /var/www/html/plun-frontend && git pull'
+          command: ssh circleci@$DEPLOY_SERVER 'cd /var/www/html/plun-frontend && git pull'
 
 workflows:
   build-and-test:
