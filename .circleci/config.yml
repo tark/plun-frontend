@@ -41,3 +41,4 @@ workflows:
                 - circleci-project-setup
           requires:
             - build-and-test
+
