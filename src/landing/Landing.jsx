@@ -9,7 +9,7 @@ export default function Landing(props) {
   return <div className=''>
 
     <Message
-      text={'Can\'t see what your team actually done last week?'}
+      text={'Can\'t see what your team actually done last week?!'}
       color={BackgrooundColors.green}/>
 
     <Message
