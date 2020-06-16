@@ -1,0 +1,26 @@
+.sprint-title {
+  font-weight: bold;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.sprint-container {
+  padding: 1rem;
+  width: 10rem;
+  background-color: #dfdfdf;
+  border-radius: 6px;
+}
+
+.sprint-task {
+  height: 1.8rem;
+  margin-bottom: 0.8rem;
+  border-radius: 3px;
+}
+
+.sprint-task-done {
+  background-color: #43a047;
+}
+
+.sprint-task-failed {
+  background-color: #e53935;
+}

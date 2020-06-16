@@ -6,13 +6,14 @@ export default function Footer(props) {
 
   const {text, color} = props
 
-  console.log(`Message - ${color}`)
-
   return <div
-    //style={{'background-color': {color} || '#ff0000'}}
-    style={{'background-color': color || '#ff0000'}}
-    className='message text-center text'>
-      {text}
+    style={{
+      'background-color': color || '#222',
+      color: '#777777',
+      fontSize: '0.8rem',
+    }}
+    className='text-center py-4'>
+    Made by Tark
   </div>
 
 }

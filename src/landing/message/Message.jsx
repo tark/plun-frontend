@@ -6,8 +6,6 @@ export default function Message(props) {
 
   const {text, color} = props
 
-  console.log(`Message - ${color}`)
-
   return <div
     style={{backgroundColor: color || '#ff0000'}}
     className='message text-center text'>

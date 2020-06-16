@@ -3,7 +3,7 @@
   height: 14px;
   margin-top: 12px;
   filter: grayscale(100%);
-  opacity: 0.5;
+  opacity: 0.7;
 }
 
 .task {
@@ -12,8 +12,11 @@
 
 .task-title {
   padding-left: 0.3rem;
-  margin-top: 7px;
+  margin-top: 0.45rem;
   line-height: 1.5rem;
+  text-decoration: underline;
+  color: #0C6CB6;
+  cursor: pointer;
 }
 
 .status-icon {

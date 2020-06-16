@@ -1,9 +1,13 @@
 .text {
-  font-size: 8vh;
+  font-size: 2.2rem;
   color: #000000;
   font-family: 'Open Sans', serif;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.1rem;
+}
+
+.small {
+  font-size: 1.8rem;
 }
 
 .message {
@@ -11,5 +15,4 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10vw;
 }

@@ -4,7 +4,7 @@ import {string} from 'prop-types'
 import './example.css';
 import Period from '../period';
 import {getRandomInt, getRandomIntInRange} from '../../util/math';
-import {peopleNames, TasksManagers, tasksNames, TaskStatus} from '../../config/constants';
+import {defaultTasks, peopleNames, TasksManagers, TaskStatus} from '../../config/constants';
 import {getRandomElement} from '../../util/list_util';
 
 export default function Example(props) {
@@ -16,20 +16,20 @@ export default function Example(props) {
   const generatePeriods = () => {
     const localPeriods = []
 
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 1; i++) {
 
       console.log(`generatePeriods - now - ${moment()}`)
 
       localPeriods.push({
-        startTime: moment().subtract(i, 'days').valueOf(),
-        tasksLists: generateTasksLists(i === 0)
+        startTime: moment().subtract(i + 1, 'days').valueOf(),
+        tasksLists: generateTasksLists(false/*i === 0*/)
       })
     }
     return localPeriods
   }
 
   const generateTasksLists = (today) => {
-    return peopleNames.map(n => ({
+    return [peopleNames[0]].map(n => ({
       name: n,
       tasks: generateTasks(today)
     }));
@@ -39,11 +39,6 @@ export default function Example(props) {
     const tasks = []
     const tasksCount = getRandomIntInRange(3, 7);
     const doneTasksCount = getRandomInt(tasksCount);
-    //const noDoneTasksCount = tasksCount - doneTasksCount;
-    //console.log(`generateTasks - all - ${tasksCount}`)
-    //console.log(`generateTasks - done - ${doneTasksCount}`)
-    //console.log(`generateTasks - not done - ${noDoneTasksCount}`)
-    //console.log('generateTasks - ===========')
 
     for (let i = 0; i < tasksCount; i++) {
 
@@ -62,7 +57,7 @@ export default function Example(props) {
           TasksManagers.jira,
           TasksManagers.teams
         ]),
-        title: getRandomElement(tasksNames),
+        title: getRandomElement(defaultTasks),
         status,
       })
     }

@@ -1,16 +1,28 @@
-import React from 'react'
-import {object, bool} from 'prop-types'
+import React, {useState} from 'react'
+import {object, bool, func} from 'prop-types'
 import '../landing.css';
 import red from '@material-ui/core/colors/red';
 import green from '@material-ui/core/colors/green';
 import yellow from '@material-ui/core/colors/yellow';
-import {TaskStatus} from '../../config/constants';
-import TaskItem from '../task_item';
+import Button from '@material-ui/core/Button';
+import DoneIcon from '@material-ui/icons/Done';
+import PlaylistAddCheckIcon from '@material-ui/icons/PlaylistAddCheck';
+import {defaultTasks, ListStatus, tasksNames, TaskStatus} from '../../config/constants';
+import TaskItem from '../task_item'
+import TaskSelector from '../task_selector'
+
 
 export default function TasksList(props) {
 
-  const {tasksList, showResult} = props
+  //const
+  const {tasksList, showResult, editable, onPlanned} = props
   const {name, tasks} = tasksList
+
+  const [innerTasks, setInnerTasks] = useState([])
+  //const [innerEditable, setInnerEditable] = useState(true)
+  const [listStatus, setListStatus] = useState(ListStatus.planning)
+
+  console.log(`TasksList - innerTasks - ${innerTasks}`)
 
   let percent = tasks.filter(t => t.status === TaskStatus.done).length / tasks.length;
   percent = Math.round(percent * 100);
@@ -28,22 +40,104 @@ export default function TasksList(props) {
     color = red['700']
   }
 
-  return <div className='col-lg'>
-    <div className='ml-2 d-flex' style={{fontSize: '1.2rem'}}>
+
+  const removeElementFromList = (list, element) => {
+    const listInner = [...list]
+    const index = listInner.indexOf(element);
+    if (index > -1) {
+      listInner.splice(index, 1);
+    }
+    return listInner;
+  }
+
+  const onDeletePressed = (task) => {
+    // remove task from tasks
+    setInnerTasks(innerTasks.filter(t => t.id !== task.id))
+  }
+
+  const defaultTasksSorted = () => {
+    const defaultTasksInner = [...defaultTasks]
+    defaultTasksInner.sort((t1, t2) => {
+      const name1 = t1.name.toLowerCase();
+      const name2 = t2.name.toLowerCase();
+      return name1 > name2 ? 1 : name1 < name2 ? -1 : 0
+    })
+    return defaultTasksInner
+  }
+
+  return <div className='col-lg' style={{maxWidth: 300}}>
+    {/*<div className='ml-2 d-flex' style={{fontSize: '1.2rem'}}>
       <strong>{name}</strong>
       {showResult && <div
         className='ml-2'
         style={{color: color, textSize: '1.2rem'}}>
         <strong>{resultText}</strong>
       </div>}
-    </div>
-    {tasks.map(t => <TaskItem task={t}/>)}
+    </div>*/}
+    {innerTasks.map(t => <TaskItem
+      task={{...t, status: TaskStatus.created}}
+      showDeleteButton={listStatus === ListStatus.planning}
+      onDeletePressed={onDeletePressed}
+    />)}
+
+    {listStatus === ListStatus.planning && <div style={{marginLeft: 10, marginRight: 10}}>
+      <TaskSelector
+        tasks={defaultTasksSorted().filter(t => innerTasks.every(t1 => t1.id !== t.id))}
+        onTaskSelected={t => setInnerTasks([...innerTasks, t])}/>
+    </div>}
+
+    {listStatus === ListStatus.planning && <div className='row'>
+      <Button
+        variant='contained'
+        color='primary'
+        className='mt-3 flex-grow-1 mx-4 action_button'
+        size='small'
+        onClick={() => setListStatus(ListStatus.planned)}>
+        <PlaylistAddCheckIcon style={{fontSize: '1.2rem'}} className='mr-2'/>
+        Plan it
+      </Button>
+    </div>}
+
+    {/*{listStatus === ListStatus.planned && <div className='row'>
+      <Button
+        variant='contained'
+        color='primary'
+        className='mt-3 flex-grow-1 mx-4 action_button'
+        size='small'
+        onClick={() => setListStatus(ListStatus.resultSaved)}>
+        <DoneIcon style={{fontSize: '1.2rem'}} className='mr-2'/>
+        Save & Share result
+      </Button>
+    </div>}*/}
+
+    {listStatus === ListStatus.planned && <div>
+      <Button
+        disabled
+        variant='text'
+        className='mt-3 flex-grow-1 mx-4 action_button'
+        size='small'>
+        Plan copied to clipboard
+      </Button>
+    </div>}
+
+    {listStatus === ListStatus.resultSaved && <div>
+      <Button
+        disabled
+        variant='text'
+        className='mt-3 flex-grow-1 mx-4 action_button'
+        size='small'>
+        Result copied to clipboard
+      </Button>
+    </div>}
+
   </div>
 
 }
 
 TasksList.propTypes = {
   tasksList: object,
-  showResult: bool
+  showResult: bool,
+  editable: bool,
+  onPlanned: func,
 }
 

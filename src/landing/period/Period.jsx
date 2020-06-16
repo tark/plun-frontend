@@ -7,27 +7,25 @@ import TasksList from '../tasks_list/TasksList';
 export default function Period(props) {
 
   const {period} = props
-  const {tasksLists, startTime} = period
-
-  //console.log(`Period - ${period}`)
-  console.log(`Period - ${startTime}`)
-  console.log(`Period - ${moment(startTime)}`)
+  const {tasksLists, startTime, title} = period
 
   const today = moment(startTime).day() === moment().day()
 
-
-  return <div className='m-4 period'>
-    <div
-      className='period-title mb-4 ml-2'>{today ? 'Today' : moment(startTime).format('MMMM, D')}</div>
+  return <div className='m-4'>
+    <div className='period-title mb-4 ml-2'>
+      {/*{title || today ? 'Today' : moment(startTime).format('MMMM, D')}*/}
+      {/*{title || today ? 'Today' : 'Yesterday'}*/}
+      Today
+    </div>
     <div className='d-flex flex-row row'>
       {tasksLists.map(l => <TasksList
         tasksList={l}
         showResult={!today}
       />)}
     </div>
-    <div className='mt-5'>
+    {/*<div className='mt-5'>
       <hr className='solid'/>
-    </div>
+    </div>*/}
   </div>
 
 }

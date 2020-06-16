@@ -13,44 +13,48 @@ export const TimePeriod = {
 export const TaskStatus = {
   done: 'done',
   failed: 'failed',
-  opened: 'opened',
+  created: 'created',
 }
 
-export const BackgrooundColors = {
+export const ListStatus = {
+  planning: 'planning',
+  planned: 'planned',
+  resultSaved: 'resultSaved',
+}
+
+export const BackgroundColors = {
   green: '#ffcdd2',
   blue: '#bbdefb',
   red: '#c8e6c9',
 }
 
-export const peopleNames = [
-  'Mike', 'Jane', 'Paul', 'Alex'
-]
+export const peopleNames = ['Mike', 'Jane', 'Paul']
 
-export const tasksNames = [
-  'Position screen logic',
-  'Perpetual details screen logic',
-  'Share ROE',
-  'Share trade',
-  'Create order logic',
-  'Security screen',
-  'Change password screen',
-  'Settings screen',
-  'About screen',
-  'Assets screen',
-  'Implement candlestick chart',
-  'Perpetual details screen',
-  'Trade screen',
-  'Splash screen',
-  'Account screen',
-  'Home screen',
-  'Password recovery screen',
-  'Markets screen',
-  'Phone & Email settings screen',
-  'Positions screen',
-  'Implement UI layouts of different screens',
-  'Calculator screen',
-  'Login screen',
-  'Create project base',
+export const defaultTasks = [
+  {id: 0, name: 'Position screen logic'},
+  {id: 1, name: 'Perpetual details screen logic'},
+  {id: 2, name: 'Share ROE'},
+  {id: 3, name: 'Share trade'},
+  {id: 4, name: 'Create order logic'},
+  {id: 5, name: 'Security screen'},
+  {id: 6, name: 'Change password screen'},
+  {id: 7, name: 'Settings screen'},
+  {id: 8, name: 'About screen'},
+  {id: 9, name: 'Assets screen'},
+  {id: 11, name: 'Implement candlestick chart'},
+  {id: 12, name: 'Perpetual details screen'},
+  {id: 13, name: 'Trade screen'},
+  {id: 14, name: 'Splash screen'},
+  {id: 15, name: 'Account screen'},
+  {id: 16, name: 'Home screen'},
+  {id: 17, name: 'Password recovery screen'},
+  {id: 18, name: 'Markets screen'},
+  {id: 19, name: 'Phone & Email settings screen'},
+  {id: 20, name: 'Positions screen'},
+  {id: 21, name: 'Implement UI layouts of different screens'},
+  {id: 22, name: 'Calculator screen'},
+  {id: 23, name: 'Login screen'},
+  {id: 24, name: 'Create project base'}
 ]
 
 export const periods = [
@@ -64,32 +68,32 @@ export const periods = [
           {
             taskManager: TasksManagers.trello,
             title: 'Order confirmation screen - check cost @ leverage logic',
-            opened: true,
+            created: true,
           },
           {
             taskManager: TasksManagers.trello,
             title: 'Order confirmation screen - check cost @ leverage logic',
-            opened: true,
+            created: true,
           },
           {
             taskManager: TasksManagers.trello,
             title: 'Order confirmation screen - check cost @ leverage logic',
-            opened: true,
+            created: true,
           },
           {
             taskManager: TasksManagers.trello,
             title: 'Order confirmation screen - check cost @ leverage logic',
-            opened: true,
+            created: true,
           },
           {
             taskManager: TasksManagers.trello,
             title: 'Order confirmation screen - check cost @ leverage logic',
-            opened: true,
+            created: true,
           },
           {
             taskManager: TasksManagers.trello,
             title: 'Order confirmation screen - check cost @ leverage logic',
-            opened: true,
+            created: true,
           },
         ],
       },
