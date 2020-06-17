@@ -26,11 +26,20 @@ jobs:
           name: Keyscan deploy server
           command: ssh-keyscan -H $DEPLOY_SERVER >> ~/.ssh/known_hosts
       - run:
+          name: SSH to server
+          command: ssh circleci@$DEPLOY_SERVER
+      - run:
+          name: Go to project folder
+          command: cd /var/www/html/plun-frontend
+      - run:
+          name: Get last code
+          command: git pull
+      - run:
           name: Install dependencies
           command: npm install
       - run:
           name: Deploy
-          command: ssh circleci@$DEPLOY_SERVER 'cd /var/www/html/plun-frontend && git pull && npm run build'
+          command: npm run build'
 
 workflows:
   build-and-test:
