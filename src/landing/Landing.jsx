@@ -1,13 +1,11 @@
 import React from 'react'
+import classnames from 'classnames';
 import {createMuiTheme} from '@material-ui/core';
 import red from '@material-ui/core/colors/red';
-import green from '@material-ui/core/colors/green';
 import {ThemeProvider} from '@material-ui/styles';
 import './message/message.css';
 import './landing.css'
-import Footer from './footer';
-import Example from './example';
-import Roulette from "./Roulette";
+import Roulette from './Roulette';
 
 const theme = createMuiTheme({
   palette: {
@@ -49,18 +47,42 @@ export default function Landing(props) {
 
   //return <Roulette options={['test', 'super', 'AI', 'blockchain']}/>
 
+  const title = (text) => {
+    return text.split(' ').map(w => <div className={classnames('title word')}>{w}</div>)
+  }
+
+  const subtitle = (text) => {
+    return text.split(' ').map(w => <div className={classnames('subtitle word')}>{w}</div>)
+  }
+
+  const rouletteBlue = (text) => {
+    return <Roulette
+      options={text.split(' ')}
+      className='word'
+      color='blue'/>
+  }
+
+  const rouletteRed = (text) => {
+    return <Roulette
+      options={text.split(' ')}
+      className='word'
+      color='red'/>
+  }
+
+  const rouletteOrange = (text) => {
+    return <Roulette
+      options={text.split(' ')}
+      className='word'
+      color='orange'/>
+  }
+
   return <ThemeProvider theme={theme}>
 
     <div className='col pb-5'>
 
       <div className='my-5 text-center'>
         <div className='d-flex flex-wrap justify-content-center'>
-          <div className='title word'>Plun</div>
-          <div className='title word'>is</div>
-          <div className='title word'>a</div>
-          <div className='title word'>plun-result</div>
-          <div className='title word'>tool</div>
-          <div className='title word'>for</div>
+          {title('Plun is a plun-result tool for')}
           <Roulette
             options={['Teams', 'Jira', 'Trello']}
             className='word'
@@ -73,41 +95,14 @@ export default function Landing(props) {
 
         <div className='col-lg-6 px-5'>
           <div className='d-flex flex-wrap'>
-            <div className='title word'>Work</div>
-            <Roulette
-              options={['calmly', 'focused', 'confident', 'clear', 'fast']}
-              className='word'
-              color='blue'/>
-            <div className='title word'>after</div>
-            <div className='title word'>create</div>
-            <div className='title word'>plan</div>
-            <div className='title word'>for</div>
-            <Roulette
-              options={['today', 'week', 'month']}
-              className='word'
-              color='red'/>
-            <div className='title word'>from</div>
-            <div className='title word'>your</div>
-            <Roulette
-              options={['Teams', 'Jira', 'Trello', 'Asana']}
-              className='word'
-              color='blue'/>
-            <div className='title word'>tasks</div>
-            <div className='title word'>in</div>
-            <div className='title word'>2</div>
-            <div className='title word'>minutes,</div>
-            <div className='subtitle word'>instead</div>
-            <div className='subtitle word'>of</div>
-            <div className='subtitle word'>rush</div>
-            <div className='subtitle word'>between</div>
-            <div className='subtitle word'>tasks</div>
-            <div className='subtitle word'>every</div>
-            <div className='subtitle word'>hour</div>
-            <div className='subtitle word'>and</div>
-            <div className='subtitle word'>loose</div>
-            <div className='subtitle word'>context</div>
-            <div className='subtitle word'>every</div>
-            <div className='subtitle word'>time</div>
+            {title('Work')}
+            {rouletteBlue('peaceful calm focused confident clear fast')}
+            {title('after create plan for')}
+            {rouletteRed('today week month')}
+            {title('from your')}
+            {rouletteBlue('Teams Jira Trello Asana')}
+            {title('tasks in 2 minutes, ')}
+            {subtitle('instead of rush between tasks every hour and loose context every time')}
           </div>
 
           <div className='card mt-5 shadow text-center justify-content-center'>
@@ -121,45 +116,15 @@ export default function Landing(props) {
 
         <div className='col-lg-6 px-5'>
           <div className='d-flex flex-wrap'>
-            <div className='title word'>Feel</div>
-            <Roulette
-              options={['connected', 'free', 'funny', 'together', 'nice', 'safe', 'confident', 'talking']}
-              color='orange'
-            />
-            <div className='title word'>after</div>
-            <div className='title word'>update</div>
-            <div className='title word'>your</div>
-            <div className='title word'>team</div>
-            <div className='title word'>with</div>
-            <div className='title word'>the</div>
-            <div className='title word'>progress</div>
-            <div className='title word'> in</div>
-            <Roulette
-              options={['Slack', 'Teams', 'Skype']}
-              color='blue'/>
-            <div className='title word'>in</div>
-            <div className='title word'>2</div>
-            <div className='title word'>clicks,</div>
-            <div className='subtitle word'>instead</div>
-            <div className='subtitle word'>of</div>
-            <div className='subtitle word'>trying</div>
-            <div className='subtitle word'>to</div>
-            <div className='subtitle word'>remember</div>
-            <div className='subtitle word'>it,</div>
-            <div className='subtitle word'>scroll</div>
-            <div className='subtitle word'>it,</div>
-            <div className='subtitle word'>search</div>
-            <div className='subtitle word'>for</div>
-            <div className='subtitle word'>it,</div>
-            <div className='subtitle word'>and</div>
-            <div className='subtitle word'>copy-past</div>
-            <div className='subtitle word'>in</div>
-            <div className='subtitle word'>a hurry</div>
+            <div className='title word'>Be</div>
+            {rouletteOrange('transparent structured informed connected opened honest reliable friendly')}
+            {title('after update your team with the progress in')}
+            {rouletteBlue('Slack Teams Skype')}
+            {title('in 4 clicks,')}
+            {subtitle('instead of searching, copying, composing a long message and forgetting to send finally')}
           </div>
 
-          <div
-            className='card mt-5 shadow text-center justify-content-center'
-            >
+          <div className='card mt-5 shadow text-center justify-content-center'>
             <img
               src='result_image.gif'
               style={{width: 374, height: 297, marginTop: 20, marginBottom: 20}}
