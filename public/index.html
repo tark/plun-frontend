@@ -39,23 +39,39 @@
           crossorigin="anonymous">
 
     <!-- roboto font -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,800,900&display=swap" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700,800,900&display=swap">
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,800,900&display=swap"/>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700,800,900&display=swap">
 
     <title>Plun - plan-result comparison tool. Task management for enterprises and startups.</title>
 </head>
+
 <body>
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-app.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+<script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-analytics.js"></script>
+
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyCt7wqBvDnVdJpLhnvUf35AGCCqp5Q79n0",
+    authDomain: "plun-io.firebaseapp.com",
+    databaseURL: "https://plun-io.firebaseio.com",
+    projectId: "plun-io",
+    storageBucket: "plun-io.appspot.com",
+    messagingSenderId: "1072198800950",
+    appId: "1:1072198800950:web:691bcd591d810fc60eaa97",
+    measurementId: "G-V897FVJEKK"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  firebase.analytics();
+</script>
 <noscript>You need to enable JavaScript to run this app.</noscript>
 <div id="root"></div>
-<!--
-  This HTML file is a template.
-  If you open it directly in the browser, you will see an empty page.
-
-  You can add webfonts, meta tags, or analytics to this file.
-  The build step will place the bundled scripts into the <body> tag.
-
-  To begin the development, run `npm start` or `yarn start`.
-  To create a production bundle, use `npm run build` or `yarn build`.
--->
 </body>
 </html>
