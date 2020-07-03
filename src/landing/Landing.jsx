@@ -1,3 +1,4 @@
+import {isBrowser, isMobile} from 'react-device-detect';
 import React from 'react'
 import classnames from 'classnames';
 import {createMuiTheme} from '@material-ui/core';
@@ -6,6 +7,7 @@ import {ThemeProvider} from '@material-ui/styles';
 import './message/message.css';
 import './landing.css'
 import Roulette from './Roulette';
+import ActionButton from './action_button/ActionButton';
 
 const theme = createMuiTheme({
   palette: {
@@ -37,16 +39,6 @@ const theme = createMuiTheme({
 
 export default function Landing(props) {
 
-  const onActionButtonClick = (buttonIndex) => {
-    switch (buttonIndex) {
-      case 0:
-        // send a data to firebase about a free trial
-        break;
-    }
-  }
-
-  //return <Roulette options={['test', 'super', 'AI', 'blockchain']}/>
-
   const title = (text) => {
     return text.split(' ').map(w => <div className={classnames('title word')}>{w}</div>)
   }
@@ -56,17 +48,11 @@ export default function Landing(props) {
   }
 
   const rouletteBlue = (text) => {
-    return <Roulette
-      options={text.split(' ')}
-      className='word'
-      color='blue'/>
+    return <Roulette options={text.split(' ')} className='word' color='blue'/>
   }
 
   const rouletteRed = (text) => {
-    return <Roulette
-      options={text.split(' ')}
-      className='word'
-      color='red'/>
+    return <Roulette options={text.split(' ')} className='word' color='red'/>
   }
 
   const rouletteOrange = (text) => {
@@ -80,21 +66,22 @@ export default function Landing(props) {
 
     <div className='col pb-5'>
 
-      <div className='my-5 text-center'>
+      <div className='my-5 text-center px-5'>
         <div className='d-flex flex-wrap justify-content-center'>
           {title('Plun is a plun-result tool for')}
-          <Roulette
-            options={['Teams', 'Jira', 'Trello']}
-            className='word'
-            color='blue'
-          />
+          {rouletteBlue('Teams Jira Trello')}
         </div>
+      </div>
+
+      <div className='w-100 d-flex align-items-center justify-content-center pb-5'>
+        <ActionButton/>
       </div>
 
       <div className='row flex-grow-1'>
 
-        <div className='col-lg-6 px-5'>
-          <div className='d-flex flex-wrap'>
+        <div className='col-lg-6'>
+
+          <div className='d-flex flex-wrap mx-5'>
             {title('Work')}
             {rouletteBlue('peaceful calm focused confident clear fast')}
             {title('after create plan for')}
@@ -105,34 +92,48 @@ export default function Landing(props) {
             {subtitle('instead of rush between tasks every hour and loose context every time')}
           </div>
 
-          <div className='card mt-5 shadow text-center justify-content-center'>
+          {isBrowser && <div className='card mt-5 mx-5 shadow text-center justify-content-center'>
             <img
               src='plan_image.gif'
               style={{width: 374, height: 337}}
               className='align-self-center'/>
-          </div>
+          </div>}
+
+          {isMobile && <img
+            src='plan_image.gif'
+            style={{width: '100%'}}
+            className='align-self-center mb-5'/>}
 
         </div>
 
-        <div className='col-lg-6 px-5'>
-          <div className='d-flex flex-wrap'>
+        <div className='col-lg-6'>
+          <div className='d-flex flex-wrap mx-5'>
             <div className='title word'>Be</div>
             {rouletteOrange('transparent structured informed connected opened honest reliable friendly')}
             {title('after update your team with the progress in')}
             {rouletteBlue('Slack Teams Skype')}
             {title('in 4 clicks,')}
-            {subtitle('instead of searching, copying, composing a long message and forgetting to send finally')}
+            {subtitle('instead of searching, copying, writing a long message and forgetting to send finally')}
           </div>
 
-          <div className='card mt-5 shadow text-center justify-content-center'>
+          {isBrowser && <div className='card mt-5 mx-5 shadow text-center justify-content-center'>
             <img
               src='result_image.gif'
               style={{width: 374, height: 297, marginTop: 20, marginBottom: 20}}
               className='align-self-center'/>
-          </div>
+          </div>}
+
+          {isMobile && <img
+            src='result_image.gif'
+            style={{width: '100%', marginTop: 20, marginBottom: 20}}
+            className='align-self-center'/>}
 
         </div>
 
+      </div>
+
+      <div className='w-100 d-flex align-items-center justify-content-center py-5'>
+        <ActionButton/>
       </div>
 
     </div>
