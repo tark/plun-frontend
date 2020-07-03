@@ -10,6 +10,7 @@
     "@testing-library/jest-dom": "^5.10.0",
     "@testing-library/react": "^10.2.1",
     "@testing-library/user-event": "^11.4.2",
+    "@typeform/embed": "^0.22.0",
     "classnames": "^2.2.6",
     "d3": "^5.16.0",
     "eslint-config-airbnb": "^18.1.0",
@@ -20,7 +21,8 @@
     "prop-types": "latest",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-scripts": "3.4.1"
+    "react-scripts": "3.4.1",
+    "react-device-detect": "^1.13.1"
   },
   "scripts": {
     "start": "react-scripts start",
