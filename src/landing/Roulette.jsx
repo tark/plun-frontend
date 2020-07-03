@@ -22,14 +22,14 @@ export default function Roulette(props) {
       await animation.start({
         y: -height * i,
       })
-      await timeout(2000)
+      await timeout(4000)
     }
 
     await scroll()
   }
 
   return <div style={{height, overflow: 'hidden'}} className='word'>
-    <Frame animate={animation} style={{backgroundColor: 'white', width: 'auto'}} className='position-relative'>
+    <Frame animate={animation} style={{backgroundColor: 'transparent', width: 'auto'}} className='position-relative'>
       {options.map(o => <div style={{height, color}} className='title text-center'>{o}</div>)}
     </Frame>
   </div>
