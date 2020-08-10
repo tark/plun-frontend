@@ -1,12 +1,31 @@
+//import dotenv from 'dotenv'
 import React from 'react';
+import {BrowserRouter, Route, Switch} from 'react-router-dom'
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
 import * as serviceWorker from './serviceWorker';
+import AzureAuthCallback from './azure_auth_callback';
+import Main from './main/Main';
+import Landing from './landing';
+import Store from './store/store.js'
+
+const store = new Store();
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter>
+      <Switch>
+        <Route path="/azure-auth-callback">
+          <AzureAuthCallback store={store}/>
+        </Route>
+        <Route path="/app">
+          <Main store={store}/>
+        </Route>
+        <Route path="/">
+          <Landing/>
+        </Route>
+      </Switch>
+    </BrowserRouter>
   </React.StrictMode>,
   document.getElementById('root')
 );
