@@ -1,13 +1,15 @@
-import {isBrowser, isMobile} from 'react-device-detect';
 import React from 'react'
 import classnames from 'classnames';
 import {createMuiTheme} from '@material-ui/core';
 import red from '@material-ui/core/colors/red';
+import queryString from 'querystring'
 import {ThemeProvider} from '@material-ui/styles';
 import './message/message.css';
 import './landing.css'
+import Button from '@material-ui/core/Button';
 import Roulette from './Roulette';
 import ActionButton from './action_button/ActionButton';
+import TaskSelector from './task_selector';
 
 const theme = createMuiTheme({
   palette: {
@@ -62,6 +64,26 @@ export default function Landing(props) {
       color='orange'/>
   }
 
+  const onAzureAuthClick = (e) => {
+    e.preventDefault();
+
+    const appId = process.env.REACT_APP_AZURE_APP_ID
+    const state = '...'
+    const scope = 'vso.work_full'
+    const callbackUrl = process.env.REACT_APP_AZURE_CALLBACK_URL
+    const authUrl = new URL('https://app.vssps.visualstudio.com/oauth2/authorize')
+
+    authUrl.search = queryString.stringify({
+      client_id: appId,
+      response_type: 'Assertion',
+      state,
+      scope,
+      redirect_uri: callbackUrl,
+    });
+
+    window.location.href = authUrl
+  }
+
   return <ThemeProvider theme={theme}>
 
     <div className='col pb-5'>
@@ -92,7 +114,7 @@ export default function Landing(props) {
             {subtitle('instead of rush between tasks every hour and loose context every time')}
           </div>
 
-          {isBrowser && <div className='card mt-5 mx-5 shadow text-center justify-content-center'>
+          {/*{isBrowser && <div className='card mt-5 mx-5 shadow text-center justify-content-center'>
             <img
               src='plan_image.gif'
               style={{width: 374, height: 337}}
@@ -102,7 +124,7 @@ export default function Landing(props) {
           {isMobile && <img
             src='plan_image.gif'
             style={{width: '100%'}}
-            className='align-self-center mb-5'/>}
+            className='align-self-center mb-5'/>}*/}
 
         </div>
 
@@ -116,7 +138,7 @@ export default function Landing(props) {
             {subtitle('instead of searching, copying, writing a long message and forgetting to send finally')}
           </div>
 
-          {isBrowser && <div className='card mt-5 mx-5 shadow text-center justify-content-center'>
+          {/*{isBrowser && <div className='card mt-5 mx-5 shadow text-center justify-content-center'>
             <img
               src='result_image.gif'
               style={{width: 374, height: 297, marginTop: 20, marginBottom: 20}}
@@ -126,7 +148,7 @@ export default function Landing(props) {
           {isMobile && <img
             src='result_image.gif'
             style={{width: '100%', marginTop: 20, marginBottom: 20}}
-            className='align-self-center'/>}
+            className='align-self-center'/>}*/}
 
         </div>
 
@@ -135,6 +157,12 @@ export default function Landing(props) {
       <div className='w-100 d-flex align-items-center justify-content-center py-5'>
         <ActionButton/>
       </div>
+
+      <TaskSelector/>
+
+      <Button onClick={onAzureAuthClick}>
+        Auth azure
+      </Button>
 
     </div>
 

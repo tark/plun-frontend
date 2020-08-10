@@ -1,3 +1,3 @@
-import MeetEntryFile from './Landing'
+import Landing from './Landing'
 
-export default MeetEntryFile
+export default Landing
