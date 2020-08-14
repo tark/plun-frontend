@@ -4,6 +4,14 @@ import Button from '@material-ui/core/Button';
 import queryString from 'querystring'
 import {authToAzureByUserId} from '../api/plun_api';
 import {UnauthorizedError} from '../api/unauthorized_error';
+import './main.css';
+import Drawer from '@material-ui/core/Drawer';
+import List from '@material-ui/core/List';
+import Divider from '@material-ui/core/Divider';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import MailIcon from '@material-ui/icons/Business';
 
 export default function Main(props) {
 
@@ -11,6 +19,7 @@ export default function Main(props) {
   const [authSuccess, setAuthSuccess] = useState(false)
 
   const {store} = props
+  const user = store.getUser();
 
   useEffect(() => {
     loginOnStart().then()
@@ -76,12 +85,46 @@ export default function Main(props) {
     }
   }
 
-  const user = store.getUser();
+  const content = () => {
+    return (<div>
+      <Drawer
+        className='drawer'
+        variant="permanent"
+        classes={{paper: 'drawerPaper'}}
+        anchor="left">
 
-  return <div style={{backgroundColor: '#bbb', height: '100vh'}}>
+        <List>
+
+          <ListItem button key={user.name}>
+            <ListItemText primary={user.name}/>
+          </ListItem>
+
+          <Divider/>
+
+          <ListItem button key='organizaton'>
+            <ListItemIcon><MailIcon/></ListItemIcon>
+            <ListItemText primary='DueDEX'/>
+          </ListItem>
+
+          <ListItem button key='project'>
+            <ListItemIcon/>
+            <ListItemText primary='Mex'/>
+          </ListItem>
+
+        </List>
+
+      </Drawer>
+
+    </div>)
+  }
+
+
+  return <div className='main'>
 
     {!authSuccess && <div>
-      Auth failed
+      <div>
+        Auth failed
+      </div>
 
       <Button onClick={onAzureLoginClick}>
         Login with Azure
@@ -89,11 +132,7 @@ export default function Main(props) {
 
     </div>}
 
-    {authSuccess && <div>
-      {user && <div>
-        Hello, {user.name}!
-      </div>}
-    </div>}
+    {authSuccess && content()}
 
   </div>
 
