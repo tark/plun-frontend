@@ -33,6 +33,7 @@ export default function AzureAuthCallback(props) {
         window.location.assign('https://localhost:3000/app?authResult=fail')
       }
     } catch (e) {
+      console.log(`authToAzure - ${e}`)
       setAuthFail(true)
       window.location.assign('https://localhost:3000/app?authResult=fail')
     }
