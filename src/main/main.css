@@ -1,0 +1,17 @@
+.main {
+  background: #eee;
+  height: 100vh;
+  padding: 20px;
+}
+
+.main-title {
+  font-size: 1.5rem;
+}
+
+.drawer {
+  width: 220px;
+}
+
+.drawerPaper {
+  width: 220px;
+}
