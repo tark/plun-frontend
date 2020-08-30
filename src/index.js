@@ -4,9 +4,9 @@ import {BrowserRouter, Route, Switch} from 'react-router-dom'
 import ReactDOM from 'react-dom';
 import './index.css';
 import * as serviceWorker from './serviceWorker';
-import AzureAuthCallback from './azure_auth_callback';
-import Main from './main/Main';
-import Landing from './landing';
+import AzureAuthCallback from './views/azure_auth_callback';
+import Main from './views/main/Main';
+import Landing from './views/landing';
 import Store from './store/store.js'
 
 const store = new Store();
