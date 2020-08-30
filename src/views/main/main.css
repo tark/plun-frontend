@@ -1,4 +1,4 @@
-.main {
+.root {
   background: #eee;
   height: 100vh;
   padding: 20px;
@@ -14,4 +14,12 @@
 
 .drawerPaper {
   width: 220px;
+}
+
+.main {
+  display: flex;
+}
+
+.content {
+  padding: 10px 20px;
 }
