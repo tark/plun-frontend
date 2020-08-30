@@ -1,8 +1,8 @@
 import React, {useEffect} from 'react'
 import {useAnimation, Frame} from 'framer';
 import {array, string} from 'prop-types';
-import {remToPx} from '../util/screen_util';
-import {timeout} from '../util/async_util';
+import {remToPx} from '../../util/screen_util';
+import {timeout} from '../../util/async_util';
 import './landing.css'
 
 const height = remToPx(3)

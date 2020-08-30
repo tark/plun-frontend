@@ -6,7 +6,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import {createMuiTheme, IconButton} from '@material-ui/core';
 import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox';
-import {TaskStatus} from '../../config/constants';
+import {TaskStatus} from '../../../config/constants';
 import './task_item.css';
 import red from "@material-ui/core/colors/red";
 import green from "@material-ui/core/colors/green";
@@ -24,9 +24,17 @@ const checkBoxTheme = createMuiTheme({
   },
 });
 
+
+TaskItem.propTypes = {
+  task: object,
+  showDeleteButton: bool,
+  onDeletePressed: func,
+  onStateChanged: func,
+}
+
 export default function TaskItem(props) {
 
-  const {task, showDeleteButton, onDeletePressed} = props
+  const {task, showDeleteButton, onDeletePressed, onStateChanged} = props
   const {id, name, status} = task
 
   console.log(`TaskItem - ${JSON.stringify(task, null, 2)}`)
@@ -48,7 +56,9 @@ export default function TaskItem(props) {
       case TaskStatus.created:
       default:
         return <ThemeProvider theme={checkBoxTheme}>
-          <Checkbox size='small'/>
+          <Checkbox
+            size='small'
+            onChange={(e, checked) => onStateChanged(checked)}/>
         </ThemeProvider>
       case TaskStatus.done:
         return <CheckBoxIcon size='small' className='status-icon done'/>
@@ -73,7 +83,7 @@ export default function TaskItem(props) {
   }
 
   return <div className='d-flex flex-row task'>
-    {showDeleteButton ? <div className='mr-2'/>:statusView()}
+    {statusView()}
     <div className='task-title flex-grow-1'>{titleClipped()}</div>
     {showDeleteButton && <div>
       <IconButton size='small' onClick={() => onDeletePressed(task)}>
@@ -85,9 +95,4 @@ export default function TaskItem(props) {
 
 }
 
-TaskItem.propTypes = {
-  task: object,
-  showDeleteButton: bool,
-  onDeletePressed: func,
-}
 
