@@ -23,6 +23,7 @@
   margin: 9px;
   width: 20px !important;
   height: 20px !important;
+  cursor: pointer;
 }
 
 .done {
@@ -31,4 +32,12 @@
 
 .fail {
   color: #f44336;
+}
+
+.progress {
+  color: #fbc02d;
+}
+
+.created {
+  color: #bbb;
 }
