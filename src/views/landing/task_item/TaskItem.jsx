@@ -1,28 +1,12 @@
 import React from 'react'
 import {object, bool, func} from 'prop-types'
-import {ThemeProvider} from '@material-ui/styles';
-import Checkbox from '@material-ui/core/Checkbox'
+import {IconButton} from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
-import CheckBoxIcon from '@material-ui/icons/CheckBox';
-import {createMuiTheme, IconButton} from '@material-ui/core';
-import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox';
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import {TaskStatus} from '../../../config/constants';
 import './task_item.css';
-import red from "@material-ui/core/colors/red";
-import green from "@material-ui/core/colors/green";
 
-const TITLE_MAX_LENGTH = 22
-
-const checkBoxTheme = createMuiTheme({
-  palette: {
-    primary: {
-      main: green[700],
-    },
-    secondary: {
-      main: green[700],
-    },
-  },
-});
+const TITLE_MAX_LENGTH = 42
 
 
 TaskItem.propTypes = {
@@ -35,37 +19,36 @@ TaskItem.propTypes = {
 export default function TaskItem(props) {
 
   const {task, showDeleteButton, onDeletePressed, onStateChanged} = props
-  const {id, name, status} = task
-
-  console.log(`TaskItem - ${JSON.stringify(task, null, 2)}`)
-
-  /*const taskManagerIconSrc = () => {
-    switch (taskManager) {
-      case TasksManagers.trello:
-      default:
-        return '/ic_trello.png'
-      case TasksManagers.jira:
-        return '/ic_jira.png'
-      case TasksManagers.teams:
-        return '/ic_teams.png'
-    }
-  }*/
+  const {id, name, state} = task
 
   const statusView = () => {
-    switch (status) {
+    switch (state) {
       case TaskStatus.created:
       default:
-        return <ThemeProvider theme={checkBoxTheme}>
-          <Checkbox
-            size='small'
-            onChange={(e, checked) => onStateChanged(checked)}/>
-        </ThemeProvider>
+        return <FiberManualRecordIcon
+          className='status-icon created'
+          onClick={() => onStateChanged(TaskStatus.done)}
+        />
       case TaskStatus.done:
-        return <CheckBoxIcon size='small' className='status-icon done'/>
+        return <FiberManualRecordIcon
+          className='status-icon done'
+          onClick={() => onStateChanged(TaskStatus.progress)}
+        />
       case TaskStatus.failed:
-        return <IndeterminateCheckBoxIcon className='status-icon fail'/>
-      //case TaskStatus.created:
-      //  return <div className='mr-2'/>
+        return <FiberManualRecordIcon
+          className='status-icon fail'
+          onClick={() => onStateChanged(TaskStatus.cancelled)}
+        />
+      case TaskStatus.progress:
+        return <FiberManualRecordIcon
+          className='status-icon progressx'
+          onClick={() => onStateChanged(TaskStatus.failed)}
+        />
+      case TaskStatus.cancelled:
+        return <DeleteIcon
+          className='status-icon created'
+          onClick={() => onStateChanged(TaskStatus.created)}
+        />
     }
   }
 
