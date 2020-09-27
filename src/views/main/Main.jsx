@@ -9,13 +9,20 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
-import {func, array} from 'prop-types';
-import {authToAzureByUserId, getProfile, planTasks} from '../../api/plun_api';
+import copy from 'copy-html-to-clipboard';
+import moment from 'moment';
+import {
+  authToAzureByUserId,
+  deleteTask,
+  getPreviousNearestPlan,
+  getProfile,
+  planTasks, updateTask
+} from '../../api/plun_api';
 import OrganizationsList from './OrganizationsList';
 import {UnauthorizedError} from '../../api/unauthorized_error';
 import TaskSelector from '../landing/task_selector';
 import Loader from '../components/loader';
-import TaskItem from '../landing/task_item';
+import Day from './day';
 
 export default function Main(props) {
 
@@ -28,7 +35,8 @@ export default function Main(props) {
   const [authFailReason, setAuthFailReason] = useState(false)
   const [selectedOrganization, setSelectedOrganization] = useState('')
   const [selectedProject, setSelectedProject] = useState('')
-  const [plannedTasks, setPlannedTasks] = useState([])
+  const [previousTasks, setPreviousTasks] = useState([])
+  const [todayTasks, setTodayTasks] = useState([])
   const [savingPlan, setSavingPlan] = useState(false)
   const [error, setError] = useState(null)
 
@@ -49,8 +57,19 @@ export default function Main(props) {
   }, [])
 
   useEffect(() => {
-    savePlannedTasksToServer()
-  }, [plannedTasks])
+    if (selectedOrganization && selectedProject) {
+      refreshTodayAndPreviousDayTasks()
+    }
+  }, [selectedProject, selectedOrganization])
+
+  useEffect(() => {
+    // as a reaction on changing previousTasks we should adjust today tasks
+    // once today tasks saved we should
+  }, [previousTasks])
+
+  //useEffect(() => {
+  //  savePlannedTasksToServer()
+  //}, [plannedTasks])
 
   const authByAuthCode = async () => {
     console.log('authByAuthCode')
@@ -92,6 +111,7 @@ export default function Main(props) {
       const profile = await getProfile(token)
       console.log(`initData - ${JSON.stringify(profile)}`)
       setUser(profile)
+
     } catch (e) {
       console.log(`initData - error - ${e}`)
       setLoggedIn(false)
@@ -151,27 +171,99 @@ export default function Main(props) {
     }
   }
 
-  const onTaskSelected = (task) => {
+  const onTaskSelected = async (task) => {
     console.log(`onTaskSelected - ${task}`)
-    setPlannedTasks([...plannedTasks, task])
+    await planTask(task)
+    await refreshTodayAndPreviousDayTasks()
   }
 
   const onTaskDeleted = (task) => {
     console.log(`onTaskDeleted - ${task}`)
-    setPlannedTasks(plannedTasks.filter(t => t.azureId !== task.azureId))
+    //setPlannedTasks(plannedTasks.filter(t => t.azureId !== task.azureId))
   }
 
-  const savePlannedTasksToServer = async () => {
-    if (!plannedTasks || !plannedTasks.length) {
+  const planTask = async (task) => {
+    if (!task) {
       return
     }
     try {
       setSavingPlan(true)
-      await planTasks(plannedTasks)
+      await planTasks([task])
       setSavingPlan(true)
     } catch (e) {
       setSavingPlan(false)
       setError(e)
+    }
+  }
+
+  const refreshTodayAndPreviousDayTasks = async () => {
+    try {
+      // to test old tasks
+      const tasks = await getPreviousNearestPlan(selectedOrganization.name, selectedProject.name, token)
+
+      //const tasks = await getPlanForToday(selectedOrganization.name, selectedProject.name, token)
+      setPreviousTasks(tasks);
+
+      //const previousTasks = await getPlanForToday(selectedOrganization.name, selectedProject.name, token)
+      //setTodayTasks(tasks);
+    } catch (e) {
+      setError(e)
+    }
+  }
+
+  const onTaskDelete = async (task) => {
+    console.log(`onTaskDelete - ${JSON.stringify(task, null, 2)}`)
+    await deleteTask(task)
+    await refreshTodayAndPreviousDayTasks()
+  }
+
+  const onTaskStateChanged = async (task) => {
+    await updateTask(task)
+    await refreshTodayAndPreviousDayTasks()
+  }
+
+  /**
+   * Get a list of tasks and returns a formatted message that can be inserted to the chats
+   */
+  const tasksToMessage = (date, tasks) => {
+    let result = '<div>'
+    result += '<div>'
+      + `<b>${moment(date).format('dddd')}</b>`
+      + `<span style='color: "#bbb"'>, ${moment(date).format('MMM D')}</span>`
+      + '</div>'
+
+    tasks.forEach(t => {
+      const {azureUrl, name, state} = t
+      result += '\r\n'
+      let icon = iconByTaskState(state);
+      if (icon) {
+        icon += ' '
+      }
+      if (azureUrl) {
+        result += `<p>- ${icon}<a href='${azureUrl}'>${name}</a></p>`
+      } else {
+        result += `- ${icon}${t.name}`
+      }
+    })
+    result += '\r\n'
+    result += '</div>'
+    return result
+  }
+
+  const iconByTaskState = (state) => {
+    // 'created' | 'done' | 'progress' | 'failed' | 'cancelled'
+    switch (state) {
+      case 'created':
+      default:
+        return '';
+      case 'done':
+        return '✅';
+      case 'progress':
+        return '🚧';
+      case 'failed':
+        return '❌';
+      case 'cancelled':
+        return '🗑️';
     }
   }
 
@@ -207,20 +299,39 @@ export default function Main(props) {
 
       <div className='content'>
 
+        {/* previous day - show result */}
+        <Day
+          date={new Date().getTime()}
+          tasks={previousTasks}
+          onTaskDelete={onTaskDelete}
+          onTaskStateChanged={onTaskStateChanged}
+        />
 
+        {/* current day - show the plan */}
+        <Day
+          date={new Date().getTime()}
+          tasks={previousTasks}
+          onTaskDelete={onTaskDelete}
+          onTaskStateChanged={onTaskStateChanged}
+        />
 
         <TaskSelector
           organizationName={selectedOrganization ? selectedOrganization.name : ''}
           projectName={selectedProject ? selectedProject.name : ''}
           token={token}
           onTaskSelect={onTaskSelected}/>
-      </div>
 
-      <Button
-        onClick={savePlannedTasksToServer}
-        disabled={!plannedTasks || !plannedTasks.length}>
-        Plan for today
-      </Button>
+        <Button
+          variant='contained'
+          color='primary'
+          onClick={e => {
+            console.log(tasksToMessage(moment.now(), previousTasks))
+            copy(tasksToMessage(moment.now(), previousTasks), {asHtml: true})
+          }}>
+          Copy
+        </Button>
+
+      </div>
 
       <Snackbar
         open={!!error}
@@ -235,8 +346,6 @@ export default function Main(props) {
 
     </div>)
   }
-
-  console.log(`Main - ${selectedOrganization}, ${selectedProject}`)
 
   return <div>
 
