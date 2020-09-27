@@ -1,8 +1,10 @@
-import {array, func} from 'prop-types';
-import React from 'react';
+import {array, func, number} from 'prop-types';
+import React, {useCallback, useEffect} from 'react';
+import moment from 'moment';
 import TaskItem from '../../landing/task_item';
 
 Day.propTypes = {
+  date: number,
   tasks: array,
   onTaskDelete: func,
   onTaskStateChanged: func,
@@ -15,11 +17,14 @@ Day.propTypes = {
  */
 export default function Day(props) {
 
-  const {tasks, onTaskDelete, onTaskStateChanged} = props
+  const {date, tasks, onTaskDelete, onTaskStateChanged} = props
 
   return <div>
 
-    <div />
+    <div>
+      <b>{moment(date).format('dddd')}</b>
+      <span style={{color: '#bbb'}}> - {moment(date).format('MMM D')}</span>
+    </div>
 
     {!tasks && <div>No tasks for today</div>}
 
@@ -27,11 +32,10 @@ export default function Day(props) {
       <TaskItem
         task={t}
         showDeleteButton
-        onDeletePressed={onTaskDelete}
+        onDeletePressed={() => onTaskDelete(t)}
+        onStateChanged={state => onTaskStateChanged({...t, state})}
       />
     ))}
   </div>
-
-
 
 }
