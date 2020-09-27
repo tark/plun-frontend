@@ -14,6 +14,8 @@ export const TaskStatus = {
   done: 'done',
   failed: 'failed',
   created: 'created',
+  progress: 'progress',
+  cancelled: 'cancelled',
 }
 
 export const ListStatus = {
