@@ -19,6 +19,11 @@
   cursor: pointer;
 }
 
+.task-title-local {
+  color: #bbb;
+  text-decoration: none;
+}
+
 .status-icon {
   margin: 9px;
   width: 20px !important;
