@@ -1,6 +1,6 @@
 import {TaskState} from '../api/models/models';
 
-export const iconByTaskState = (state : TaskState) : string => {
+export const iconByTaskState = (state?: TaskState): string => {
   switch (state) {
     case 'created':
     default:

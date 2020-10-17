@@ -15,7 +15,7 @@
     "semi-style": "off",
     "import/no-duplicates": "off",
     "no-duplicate-imports": "off",
-    "react/react-in-jsx-scope":"off",
+    "react/react-in-jsx-scope": "off",
     "no-multiple-empty-lines": "off",
     "no-tabs": "off",
     "array-bracket-spacing": "off",
@@ -34,7 +34,7 @@
     "react/jsx-wrap-multilines": "off",
     "no-trailing-spaces": "off",
     "react/jsx-closing-bracket-location": "off",
-    "react/jsx-tag-spacing" : "off",
+    "react/jsx-tag-spacing": "off",
     "jsx-quotes": "off",
     "react/no-array-index-key": "off",
     "arrow-body-style": "off",
@@ -62,18 +62,55 @@
     "jsx-a11y/media-has-caption": 0,
     "jsx-a11y/no-noninteractive-element-to-interactive-role": 0,
     "max-len": "off",
-    "no-confusing-arrow": ["error", { "allowParens": true }],
+    "no-confusing-arrow": [
+      "error",
+      {
+        "allowParens": true
+      }
+    ],
     "no-nested-ternary": 0,
-    "no-return-assign": ["error", "except-parens"],
-    "no-unused-expressions": ["error", { "allowTernary": true }],
+    "no-return-assign": [
+      "error",
+      "except-parens"
+    ],
+    "no-unused-expressions": [
+      "error",
+      {
+        "allowTernary": true
+      }
+    ],
     "react/forbid-prop-types": 0,
     "react/jsx-first-prop-new-line": 0,
     "react/jsx-max-props-per-line": 0,
     "react/sort-comp": 0,
-    "jsx-a11y/anchor-is-valid": ["error", {
-      "components": ["Link"],
-      "specialLink": [ "to", "hrefLeft", "hrefRight"],
-      "aspects": ["noHref", "invalidHref", "preferButton"]
-    }]
+    "react/jsx-filename-extension": [
+      2,
+      {
+        "extensions": [
+          ".js",
+          ".jsx",
+          ".ts",
+          ".tsx"
+        ]
+      }
+    ],
+    "jsx-a11y/anchor-is-valid": [
+      "error",
+      {
+        "components": [
+          "Link"
+        ],
+        "specialLink": [
+          "to",
+          "hrefLeft",
+          "hrefRight"
+        ],
+        "aspects": [
+          "noHref",
+          "invalidHref",
+          "preferButton"
+        ]
+      }
+    ]
   }
 }

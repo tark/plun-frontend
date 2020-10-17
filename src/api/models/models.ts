@@ -20,14 +20,19 @@ export type Project = {
 };
 
 export type Task = {
-  id: string;
+  id?: string;
   name: string;
-  state: TaskState;
-  plannedAt: number;
+  state: Array<DayState>;
+  plannedAt: Array<string>;
   azureId?: number;
   azureState?: TaskState;
   azureUrl?: string;
 };
+
+export type DayState = {
+  date: string,
+  state: TaskState,
+}
 
 export type TaskState = 'created' | 'done' | 'progress' | 'failed' | 'cancelled'
 
