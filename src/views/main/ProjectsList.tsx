@@ -54,7 +54,7 @@ export default function ProjectsList(props: ProjectsListProps) {
       )}
 
       {projects && projects.length && projects.map(p => (
-        <List>
+        <List key={p.id}>
           <ListItem
             button
             key='project'

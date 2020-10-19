@@ -12,11 +12,11 @@ import Alert from '@material-ui/lab/Alert';
 //import copy from 'copy-html-to-clipboard';
 import moment, {Moment} from 'moment';
 import {
-  authToAzureByUserId,
+  authToAzureByUserId, createPlan,
   deleteTask, getPlanForToday,
   getPreviousNearestPlan,
   getProfile,
-  planTasks,
+  planTasks, updatePlan,
   updateTask
 } from '../../api/plun_api';
 import OrganizationsList from './OrganizationsList';
@@ -26,7 +26,7 @@ import Loader from '../components/loader';
 import Day from './day/index';
 import {DATE_FORMAT, TaskStatus} from '../../config/constants';
 import {iconByTaskState} from '../../util/task_util';
-import {DayState, Organization, Project, Task, User} from '../../api/models/models';
+import {Organization, Plan, PlanEntry, Project, Task, User} from '../../api/models/models';
 import {last} from '../../util/list_util';
 
 export default function Main(props: any) {
@@ -40,14 +40,16 @@ export default function Main(props: any) {
   const [authFailReason, setAuthFailReason] = useState(false)
   const [selectedOrganization, setSelectedOrganization] = useState<Organization>()
   const [selectedProject, setSelectedProject] = useState<Project>()
-  const [previousTasks, setPreviousTasks] = useState<Array<Task>>([])
+  const [previousPlan, setPreviousPlan] = useState<Plan>()
   // local tasks created here on client as a suggestion
   // for today plan
-  const [todayLocalTasks, setTodayLocalTasks] = useState([])
-  const [todayTasks, setTodayTasks] = useState([])
+  const [todayLocalPlan, setTodayLocalPlan] = useState<Plan>()
+  const [todayPlan, setTodayPlan] = useState<Plan>()
   const [planForTodaySaved, setPlanForTodaySaved] = useState(false)
   const [savingPlan, setSavingPlan] = useState(false)
   const [error, setError] = useState(null)
+  const [loadingTodayPlan, setLoadingTodayPlan] = useState(false)
+  const [loadingPreviousPlan, setLoadingPreviousPlan] = useState(false)
 
   //const {store} = props
   //const user = store.getUser();
@@ -211,45 +213,40 @@ export default function Main(props: any) {
   const refreshTodayAndPreviousDayTasks = async () => {
     try {
 
-      const previousTasksFromApi = await getPreviousNearestPlan(
+      setLoadingPreviousPlan(true)
+      const prevPlan = await getPreviousNearestPlan(
         selectedOrganization?.name ?? '',
         selectedProject?.name ?? '',
         token ?? ''
       )
+      setPreviousPlan(prevPlan);
+      setLoadingPreviousPlan(false)
 
-      console.log(`refreshTodayAndPreviousDayTasks - previous plan - ${JSON.stringify(previousTasksFromApi)}`)
-
-      setPreviousTasks(previousTasksFromApi);
-
-      const todayTasksFromApi = await getPlanForToday(
+      setLoadingTodayPlan(true)
+      const todayPlanFromApi = await getPlanForToday(
         selectedOrganization?.name ?? '',
         selectedProject?.name ?? '',
         token ?? ''
       )
+      setTodayPlan(todayPlanFromApi);
+      setLoadingTodayPlan(false)
 
-      console.log(`refreshTodayAndPreviousDayTasks - todayTasksFromApi - ${todayTasksFromApi && todayTasksFromApi.length}`)
-
-      // if we have tasks for today - show it
-      setTodayTasks(todayTasksFromApi);
-      setPlanForTodaySaved(true);
-      // if we don't - generate the list from previous tasks
-      // get not finished tasks and repeat it
-      previousTasksFromApi.forEach((t: Task) => console.log(`state - ${t.state}`))
-
-      const generatedTodayTasks = previousTasksFromApi.filter((t: Task) => {
-        // latest state, because state is an array now
-        const {state} = t.state[t.state.length - 1];
-        console.log(`filtering - state - ${state}`)
-        return state === TaskStatus.created || state === TaskStatus.progress
-      });
-
-      console.log(`refreshTodayAndPreviousDayTasks - generated tasks - ${JSON.stringify(generatedTodayTasks)}`)
-      setTodayLocalTasks(generatedTodayTasks.filter((t: Task) => previousTasksFromApi.every((t1: Task) => t.id !== t1.id)));
+      const todayPlanLocal = {
+        date: moment().format(DATE_FORMAT),
+        entries: prevPlan.entries.filter((e) => {
+          // skip if it already planned on a server side
+          return todayPlanFromApi.entries.every((e1) => e1.taskId !== e.taskId)
+            // and take from prev plan created or in progress
+            && (e.taskState === TaskStatus.created || e.taskState === TaskStatus.progress)
+        })
+      };
+      setTodayLocalPlan(todayPlanLocal);
       setPlanForTodaySaved(false);
     } catch (e) {
       setError(e)
     }
   }
+
 
   const onTaskDelete = async (task: Task) => {
     console.log(`onTaskDelete - ${JSON.stringify(task, null, 2)}`)
@@ -258,6 +255,7 @@ export default function Main(props: any) {
   }
 
   const onTaskStateChanged = async (task: Task) => {
+    console.log(`onTaskStateChanged - ${JSON.stringify(task)}`)
     await updateTask(task)
     await refreshTodayAndPreviousDayTasks()
   }
@@ -265,24 +263,29 @@ export default function Main(props: any) {
   /**
    * Get a list of tasks and returns a formatted message that can be inserted to the chats
    */
-  const tasksToMessage = (date: Moment, tasks: Array<Task>) => {
+  const planToMessage = (plan?: Plan) => {
+
+    if (!plan || !plan.entries || !plan.entries.length) {
+      return ''
+    }
+
     let result = '<div>'
     result += '<div>'
-      + `<b>${moment(date).format('dddd')}</b>`
-      + `<span style='color: "#bbb"'>, ${moment(date).format('MMM D')}</span>`
+      + `<b>${moment(plan.date).format('dddd')}</b>`
+      + `<span style='color: "#bbb"'>, ${moment(plan.date).format('MMM D')}</span>`
       + '</div>'
 
-    tasks.forEach((t: Task) => {
-      const {azureUrl, name, state} = t
+    plan.entries.forEach((e: PlanEntry) => {
+      const {task: {azureUrl, name}, taskState} = e
       result += '\r\n'
-      let icon = iconByTaskState(state?.find((s: DayState) => s.date === date.format(DATE_FORMAT))?.state);
+      let icon = iconByTaskState(taskState);
       if (icon) {
         icon += ' '
       }
       if (azureUrl) {
         result += `<p>- ${icon}<a href='${azureUrl}'>${name}</a></p>`
       } else {
-        result += `- ${icon}${t.name}`
+        result += `- ${icon}${name}`
       }
     })
     result += '\r\n'
@@ -291,117 +294,109 @@ export default function Main(props: any) {
   }
 
   const onSavePlanClick = async () => {
-    await planTasks(todayLocalTasks)
+    if (!todayLocalPlan) {
+      return
+    }
+    await createPlan(todayLocalPlan)
     setPlanForTodaySaved(true)
   }
 
-  const content = () => {
-    return (<div className='main'>
-      <Drawer
-        className='drawer'
-        variant="permanent"
-        classes={{paper: 'drawerPaper'}}
-        anchor="left">
-
-        <List>
-
-          {!user && <Loader/>}
-
-          {user && <ListItem button key={user.name}>
-            <ListItemText primary={user.name}/>
-          </ListItem>}
-
-          <Divider/>
-
-          {!user && <Loader/>}
-
-          {user && <OrganizationsList
-            token={token ?? ''}
-            onChangeOrganization={setSelectedOrganization}
-            onChangeProject={setSelectedProject}
-          />}
-
-        </List>
-
-      </Drawer>
-
-      <div className='content'>
-
-        {/* previous day - show result */}
-        <Day
-          // "last", because we have list of tasks. every tasks has lists of planned at states
-          // we we think the latest planned at date is previous
-          // todo fix it by creating new entity "plan"
-          // actually it can be broken if ALL the tasks for the previous day ar ealready planned for
-          // today, for example.
-          date={previousTasks && previousTasks.length ? moment(last(previousTasks[0].plannedAt)) : moment()}
-          tasks={previousTasks}
-          onTaskDelete={onTaskDelete}
-          onTaskStateChanged={onTaskStateChanged}
-          loading={!previousTasks || !previousTasks.length}
-        />
-
-        {/* current day - show the plan */}
-        <div className='mt-5'>
-          <Day
-            date={moment()}
-            tasks={[...todayTasks, ...todayLocalTasks.map((t: Task) => ({...t, isLocal: true}))]}
-            onTaskDelete={onTaskDelete}
-            onTaskStateChanged={onTaskStateChanged}
-            loading={!todayTasks.length && !todayLocalTasks.length}
-          />
-        </div>
-
-        <TaskSelector
-          organizationName={selectedOrganization ? selectedOrganization.name : ''}
-          projectName={selectedProject ? selectedProject.name : ''}
-          token={token ?? ''}
-          onTaskSelect={onTaskSelected}/>
-
-        {planForTodaySaved && <div className='mt-3'>
-          <Button
-            variant='contained'
-            color='primary'
-            onClick={e => {
-              console.log(tasksToMessage(moment(), previousTasks))
-              // use a type script version of copy-to-clipboard
-              //copy(tasksToMessage(moment(), previousTasks), {asHtml: true})
-            }}>
-            Copy
-          </Button>
-        </div>}
-
-        {!planForTodaySaved && <div className='mt-3'>
-          <Button
-            variant='contained'
-            color='primary'
-            onClick={onSavePlanClick}>
-            Save plan
-          </Button>
-        </div>}
-
-      </div>
-
-      <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={() => setError(null)}>
-        <Alert
-          onClose={() => setError(null)}
-          severity="success">
-          {error}
-        </Alert>
-      </Snackbar>
-
-    </div>)
+  const onPlanChanged = async (plan: Plan) => {
+    if (!plan) {
+      return
+    }
+    await updatePlan(plan)
   }
 
-  return <div>
+  return <div className='main'>
+    <Drawer
+      className='drawer'
+      variant="permanent"
+      classes={{paper: 'drawerPaper'}}
+      anchor="left">
 
-    {content()}
+      <List>
+
+        {!user && <Loader/>}
+
+        {user && <ListItem button key={user.name}>
+          <ListItemText primary={user.name}/>
+        </ListItem>}
+
+        <Divider/>
+
+        {!user && <Loader/>}
+
+        {user && <OrganizationsList
+          token={token ?? ''}
+          onChangeOrganization={setSelectedOrganization}
+          onChangeProject={setSelectedProject}
+        />}
+
+      </List>
+
+    </Drawer>
+
+    <div className='content'>
+
+      {/* previous day - show result */}
+      {previousPlan && <Day
+        plan={previousPlan}
+        onPlanChanged={onPlanChanged}
+      />}
+
+      {/* current day - show the plan */}
+      <div className='mt-5'>
+        <Day
+          plan={todayPlan}
+          localPlan={todayLocalPlan}
+          onPlanChanged={onPlanChanged}
+          loading={loadingTodayPlan || loadingPreviousPlan || !selectedProject || !selectedOrganization}
+        />
+      </div>
+
+      <TaskSelector
+        organizationName={selectedOrganization ? selectedOrganization.name : ''}
+        projectName={selectedProject ? selectedProject.name : ''}
+        token={token ?? ''}
+        onTaskSelect={onTaskSelected}/>
+
+      {planForTodaySaved && <div className='mt-3'>
+        <Button
+          variant='contained'
+          color='primary'
+          onClick={e => {
+            console.log(planToMessage(previousPlan))
+            // use a type script version of copy-to-clipboard
+            //copy(tasksToMessage(moment(), previousTasks), {asHtml: true})
+          }}>
+          Copy
+        </Button>
+      </div>}
+
+      {!planForTodaySaved && <div className='mt-3'>
+        <Button
+          variant='contained'
+          color='primary'
+          onClick={onSavePlanClick}>
+          Save plan
+        </Button>
+      </div>}
+
+    </div>
+
+    <Snackbar
+      open={!!error}
+      autoHideDuration={6000}
+      onClose={() => setError(null)}>
+      <Alert
+        onClose={() => setError(null)}
+        severity="success">
+        {error}
+      </Alert>
+    </Snackbar>
 
   </div>
-
 }
 
 

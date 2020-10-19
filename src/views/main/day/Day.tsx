@@ -1,19 +1,18 @@
-import React, {useCallback, useEffect} from 'react';
-import moment, {Moment} from 'moment';
+import React from 'react';
+import moment from 'moment';
 import ContentLoader from 'react-content-loader';
 import TaskItem from '../../landing/task_item';
-import {DayState, Task, TaskState} from '../../../api/models/models';
-import {replaceWhere} from '../../../util/list_util';
-import {DATE_FORMAT} from '../../../config/constants';
+import {Plan, Task} from '../../../api/models/models';
+import './day.css';
 
 interface DayProps {
-  date: Moment,
-  tasks: Array<Task>,
-  onTaskDelete: Function,
-  onTaskStateChanged: Function,
-  loading: boolean,
+  plan?: Plan,
+  localPlan?: Plan,
+  onPlanChanged: Function,
+  // using special flag instead of stay on plan == null
+  // because after loaded plan still can be null
+  loading?: boolean,
 }
-
 
 /**
  * Show tasks for today
@@ -22,19 +21,38 @@ interface DayProps {
  */
 export default function Day(props: DayProps) {
 
-  const {date, tasks, onTaskDelete, onTaskStateChanged, loading} = props
+  const {plan, localPlan, onPlanChanged, loading} = props
+  const {entries, date} = plan || {}
+  const todayMidnight = moment().set({hour: 0, minute: 0, second: 0, millisecond: 0})
 
-  /*const updatedTaskWithNewState = (task: Task, state: TaskState): Task => {
-    return {
-      ...task,
-      state: replaceWhere<DayState>(task.state, dayState => dayState.date === moment().format(DATE_FORMAT), state)
-    }
+  const handleTaskStateChanged = (task: Task, state: string) => {
 
-    //return replaceWhere(task.state, s => s.date === state.date, state)
-  }*/
+    onPlanChanged({
+      ...plan,
+      entries: entries?.map((e) => {
+        if (e.taskId === task.id) {
+          return {...e, taskState: state}
+        }
+        return e
+      })
+    })
+  }
 
-  if (loading) {
-    return <div>
+  const handleTaskDelete = (task: Task) => {
+    onPlanChanged({
+      ...plan,
+      entries: entries?.filter((e) => e.taskId !== task.id)
+    })
+  }
+
+  return <div>
+
+    <div>
+      <b>{moment(date).format('dddd')}</b>
+      <span style={{color: '#bbb'}}> - {moment(date).format('MMM D')}</span>
+    </div>
+
+    {loading && <div>
       <ContentLoader
         speed={2}
         width={500}
@@ -44,38 +62,32 @@ export default function Day(props: DayProps) {
         foregroundColor="#ecebeb"
         {...props}
       >
-        <rect x="48" y="8" rx="3" ry="3" width="88" height="6"/>
-        <rect x="48" y="26" rx="3" ry="3" width="52" height="6"/>
-        <rect x="0" y="56" rx="3" ry="3" width="410" height="6"/>
-        <rect x="0" y="72" rx="3" ry="3" width="380" height="6"/>
-        <rect x="0" y="88" rx="3" ry="3" width="178" height="6"/>
-        <circle cx="20" cy="20" r="20"/>
+        <rect x="0" y="16" rx="4" ry="4" width="16" height="16"/>
+        <rect x="32" y="16" rx="4" ry="4" width="230" height="16"/>
+
+        <rect x="0" y="48" rx="4" ry="4" width="16" height="16"/>
+        <rect x="32" y="48" rx="4" ry="4" width="220" height="16"/>
+
+        <rect x="0" y="80" rx="4" ry="4" width="16" height="16"/>
+        <rect x="32" y="80" rx="4" ry="4" width="180" height="16"/>
+
       </ContentLoader>
-    </div>
-  }
+    </div>}
 
-  const todayMidnight = moment().set({hour: 0, minute: 0, second: 0, millisecond: 0})
+    {!loading && !plan && <div className='placeholder'>No tasks for today. Create your first one.</div>}
 
-  return <div>
-
-    <div>
-      <b>{moment(date).format('dddd')}</b>
-      <span style={{color: '#bbb'}}> - {moment(date).format('MMM D')}</span>
-    </div>
-
-    {!tasks && <div>No tasks for today</div>}
-
-    {tasks && tasks.map(t => (
+    {entries && entries.map(e => (
       <TaskItem
-        key={t.id}
-        task={t}
-        showDeleteButton={todayMidnight < date}
-        showState={todayMidnight > date}
-        onDeletePressed={() => onTaskDelete(t)}
-        onStateChanged={state => onTaskStateChanged({
-          ...t,
-          state: [...t.state ?? [], state]
-        })}
+        key={e.task.id}
+        task={e.task}
+        showDeleteButton={todayMidnight < moment(date)}
+        showState={todayMidnight > moment(date)}
+        onDeletePressed={() => handleTaskDelete(e.task)}
+        onStateChanged={(s: any) => handleTaskStateChanged(e.task, s)}
+        stateChanging={false}
+        isLocal={localPlan?.entries.some((e1) => e1.taskId === e.task.id) ?? false}
+        date={moment(date)}
+        state={e.taskState}
       />
     ))}
   </div>

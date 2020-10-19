@@ -9,6 +9,7 @@ import {defaultTasks, ListStatus, tasksNames, TaskStatus} from '../../../config/
 import TaskItem from '../task_item'
 import TaskSelector from '../task_selector'
 import {Task} from '../../../api/models/models';
+import moment from 'moment';
 
 interface TasksListProps {
   tasksList: any;
@@ -82,9 +83,16 @@ export default function TasksList(props: TasksListProps) {
       </div>}
     </div>*/}
     {innerTasks.map(t => <TaskItem
-      task={{...t, status: TaskStatus.created}}
+      task={t}
+      state='created'
       showDeleteButton={listStatus === ListStatus.planning}
       onDeletePressed={onDeletePressed}
+      date={moment()}
+      isLocal={false}
+      onStateChanged={(s: any) => {
+      }}
+      showState={false}
+      stateChanging={false}
     />)}
 
     {listStatus === ListStatus.planning && <div style={{marginLeft: 10, marginRight: 10}}>

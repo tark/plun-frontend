@@ -22,16 +22,22 @@ export type Project = {
 export type Task = {
   id?: string;
   name: string;
-  state: Array<DayState>;
-  plannedAt: Array<string>;
   azureId?: number;
   azureState?: TaskState;
   azureUrl?: string;
 };
 
-export type DayState = {
+export type Plan = {
+  id?: string,
+  entries: Array<PlanEntry>,
   date: string,
-  state: TaskState,
+}
+
+export type PlanEntry = {
+  taskId: string,
+  taskState: TaskState,
+  // external field, used to return in API
+  task: Task,
 }
 
 export type TaskState = 'created' | 'done' | 'progress' | 'failed' | 'cancelled'

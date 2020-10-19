@@ -1,12 +1,13 @@
 import React, {useState} from 'react'
-import {object, bool, func} from 'prop-types'
 import {IconButton} from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
 import './task_item.css';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import classnames from 'classnames';
+import {Moment} from 'moment';
 import {iconByTaskState} from '../../../util/task_util';
+import {Task, TaskState} from '../../../api/models/models';
 
 const TITLE_MAX_LENGTH = 42
 
@@ -33,37 +34,43 @@ const options = [
   },
 ]
 
-TaskItem.propTypes = {
-  task: object,
-  showDeleteButton: bool,
-  onDeletePressed: func,
-  onStateChanged: func,
-  stateChanging: bool,
-  showState: bool,
+interface TaskItemProps {
+  task: Task;
+  state: TaskState;
+  date: Moment;
+  isLocal: boolean;
+  showDeleteButton: boolean;
+  onDeletePressed: Function;
+  onStateChanged: Function;
+  stateChanging: boolean;
+  showState: boolean;
 }
 
-export default function TaskItem(props: any) {
+export default function TaskItem(props: TaskItemProps) {
 
-  // todo implement show it grey if this is a local task
   const {
     task,
     showDeleteButton,
     showState,
     onDeletePressed,
     onStateChanged,
+    isLocal,
+    date,
+    state,
     stateChanging,
   } = props
 
-  const {id, name, state, isLocal} = task
+  const {name} = task
+  console.log(`TaskItem - ${JSON.stringify(task)}`)
   const [menuAnchor, setMenuAnchor] = useState<HTMLDivElement | null>(null);
 
-  const stateView = () => {
+  /*const stateView = () => {
     return <div
       className='status-icon'
       onClick={e => setMenuAnchor(e.currentTarget)}>
-      {iconByTaskState(state)}
+      {iconByTaskState(state.find(s => s.date === date.format(DATE_FORMAT))?.state)}
     </div>
-  }
+  }*/
 
   const titleClipped = () => {
 
@@ -86,6 +93,12 @@ export default function TaskItem(props: any) {
     setMenuAnchor(null);
   };
 
+  /*const taskState = () : TaskState => {
+    console.log(`taskState - ${JSON.stringify(state)}`)
+    console.log(`taskState - ${date.format(DATE_FORMAT)}`)
+    return state.find(s => s.date === date.format(DATE_FORMAT))?.state ?? 'created';
+  }*/
+
   return <div className='d-flex flex-row task'>
 
     {showState && <div
@@ -94,7 +107,6 @@ export default function TaskItem(props: any) {
       {iconByTaskState(state)}
     </div>}
 
-    {/*todo implement task title is local grey*/}
     <div
       className={classnames(
         'task-title flex-grow-1',

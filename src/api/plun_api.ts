@@ -2,7 +2,7 @@ import axios, {AxiosResponse} from 'axios';
 import moment from 'moment';
 import {UnauthorizedError} from './unauthorized_error';
 import {DATE_FORMAT} from '../config/constants';
-import {Task} from './models/models';
+import {Plan, Task} from './models/models';
 
 const baseApiUrl = 'http://localhost:3001';
 
@@ -44,8 +44,20 @@ export const getSuggestions = async (
 }
 
 export const planTasks = async (tasks: Array<Task>) => {
-  const result = await post('plun', {tasks})
+  const result = await post('plan', {tasks})
   console.log(`planTasks - ${result}`)
+  return result
+}
+
+export const createPlan = async (plan: Plan) => {
+  const result = await post('plan', {plan})
+  console.log(`createPlan - ${result}`)
+  return result
+}
+
+export const updatePlan = async (plan: Plan) => {
+  const result = await patch('plan', {plan})
+  console.log(`updatePlan - ${result}`)
   return result
 }
 
@@ -53,8 +65,8 @@ export const getPlanForToday = async (
   organizationName: string,
   projectName: string,
   token: string
-) => {
-  const result = await get('plun', {
+) :Promise<Plan> => {
+  const result = await get('plan', {
     organizationName,
     projectName,
     date: moment().format(DATE_FORMAT),
@@ -68,8 +80,8 @@ export const getPreviousNearestPlan = async (
   organizationName: string,
   projectName: string,
   token: string
-) => {
-  const result = await get('plun', {
+) : Promise<Plan> => {
+  const result = await get('plan', {
     organizationName,
     projectName,
     token,
@@ -79,11 +91,11 @@ export const getPreviousNearestPlan = async (
 }
 
 export const deleteTask = async (task: Task) => {
-  return del('plun', {taskId: task.id})
+  return del('plan', {taskId: task.id})
 }
 
 export const updateTask = async (task: Task) => {
-  return patch('plun', {task})
+  return patch('plan', {task})
 }
 
 const post = async (endpoint: string, body: any) => {

@@ -61,7 +61,7 @@ export default function OrganizationsList(props: OrganizationsListProps) {
       )}
 
       {organizations && organizations.length && organizations.map(o => (
-        <div>
+        <div key={o.id}>
           <List>
             <ListItem
               button

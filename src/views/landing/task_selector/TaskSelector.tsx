@@ -1,5 +1,4 @@
-import React, {useEffect, useRef, useState, useMemo, useCallback, ChangeEvent} from 'react'
-import {func, string} from 'prop-types'
+import React, {useState, useCallback, ChangeEvent} from 'react'
 import TextField from '@material-ui/core/TextField';
 import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete';
 import './task_selector.css';
@@ -84,8 +83,6 @@ export default function TaskSelector(props: TaskSelectorProps) {
             new: true,
             task: {
               name: params.inputValue,
-              plannedAt: [],
-              state: []
             },
           });
         }
