@@ -9,8 +9,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
-//import copy from 'copy-html-to-clipboard';
-import moment, {Moment} from 'moment';
+import moment from 'moment';
 import {
   authToAzureByUserId, createPlan,
   deleteTask, getPlanForToday,
@@ -27,17 +26,13 @@ import Day from './day/index';
 import {DATE_FORMAT, TaskStatus} from '../../config/constants';
 import {iconByTaskState} from '../../util/task_util';
 import {Organization, Plan, PlanEntry, Project, Task, User} from '../../api/models/models';
-import {last} from '../../util/list_util';
 
 export default function Main(props: any) {
 
-  //const [authFailed, setAuthFailed] = useState(false)
-  //const [authSuccess, setAuthSuccess] = useState(false)
   const [loggedIn, setLoggedIn] = useState(false)
   const [logging, setLogging] = useState(false)
   const [user, setUser] = useState<User>()
   const [authFailed, setAuthFailed] = useState(false)
-  const [authFailReason, setAuthFailReason] = useState(false)
   const [selectedOrganization, setSelectedOrganization] = useState<Organization>()
   const [selectedProject, setSelectedProject] = useState<Project>()
   const [previousPlan, setPreviousPlan] = useState<Plan>()
@@ -50,9 +45,6 @@ export default function Main(props: any) {
   const [error, setError] = useState(null)
   const [loadingTodayPlan, setLoadingTodayPlan] = useState(false)
   const [loadingPreviousPlan, setLoadingPreviousPlan] = useState(false)
-
-  //const {store} = props
-  //const user = store.getUser();
 
   const token = localStorage.getItem('token');
 
@@ -73,18 +65,6 @@ export default function Main(props: any) {
     }
   }, [selectedProject, selectedOrganization])
 
-  /*useEffect(() => {
-    // as a reaction on changing previousTasks we should adjust today tasks
-    // once today tasks saved we should
-    if (!planForTodaySaved) {
-      setTodayTasks(previousTasks.filter(t => t.state === TaskStatus.created && t.state === TaskStatus.progress));
-    }
-  }, [previousTasks])*/
-
-  //useEffect(() => {
-  //  savePlannedTasksToServer()
-  //}, [plannedTasks])
-
   const authByAuthCode = async () => {
     console.log('authByAuthCode')
     const appId = process.env.REACT_APP_AZURE_APP_ID
@@ -102,11 +82,6 @@ export default function Main(props: any) {
     });
 
     window.location.href = authUrl.toString()
-  }
-
-  const onAzureLoginClick = (e: any) => {
-    e.preventDefault();
-    authByAuthCode().then()
   }
 
   const initData = async () => {
@@ -187,13 +162,40 @@ export default function Main(props: any) {
 
   const onTaskSelected = async (task: Task) => {
     console.log(`onTaskSelected - ${task}`)
-    await planTask(task)
-    await refreshTodayAndPreviousDayTasks()
-  }
 
-  const onTaskDeleted = (task: Task) => {
-    console.log(`onTaskDeleted - ${task}`)
-    //setPlannedTasks(plannedTasks.filter(t => t.azureId !== task.azureId))
+    // if there was no plan - create a new plan, put task here and save the plan
+
+    if (!todayPlan) {
+      await createPlan({
+        date: moment().format(DATE_FORMAT),
+        entries: [
+          {
+            taskId: '',
+            taskState: 'created',
+            task,
+          }
+        ]
+      })
+    } else {
+
+      if (todayPlan.entries.some((e) => e.task.azureId === task.azureId)) {
+        return
+      }
+
+      await updatePlan({
+        ...todayPlan,
+        entries: [
+          ...todayPlan.entries,
+          {
+            task,
+            taskId: '',
+            taskState: 'created',
+          }
+        ]
+      })
+    }
+
+    await refreshTodayAndPreviousDayTasks()
   }
 
   const planTask = async (task: Task) => {
@@ -203,7 +205,7 @@ export default function Main(props: any) {
     try {
       setSavingPlan(true)
       await planTasks([task])
-      setSavingPlan(true)
+      setSavingPlan(false)
     } catch (e) {
       setSavingPlan(false)
       setError(e)
@@ -233,9 +235,9 @@ export default function Main(props: any) {
 
       const todayPlanLocal = {
         date: moment().format(DATE_FORMAT),
-        entries: prevPlan.entries.filter((e) => {
+        entries: prevPlan.entries?.filter((e) => {
           // skip if it already planned on a server side
-          return todayPlanFromApi.entries.every((e1) => e1.taskId !== e.taskId)
+          return todayPlanFromApi?.entries?.every((e1) => e1.taskId !== e.taskId)
             // and take from prev plan created or in progress
             && (e.taskState === TaskStatus.created || e.taskState === TaskStatus.progress)
         })
@@ -246,7 +248,6 @@ export default function Main(props: any) {
       setError(e)
     }
   }
-
 
   const onTaskDelete = async (task: Task) => {
     console.log(`onTaskDelete - ${JSON.stringify(task, null, 2)}`)
