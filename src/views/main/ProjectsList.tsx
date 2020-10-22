@@ -29,7 +29,7 @@ export default function ProjectsList(props: ProjectsListProps) {
   }, [token, organization])
 
   const fetchProjects = async () => {
-    console.log(`fetchProjects - ${organization.name}, ${token}`)
+    console.log(`fetchProjects - ${organization.name}`)
     setFetchingProjects(true)
     const myProjects = await getProjects(organization.name, token);
     setProjects(myProjects);
@@ -57,7 +57,7 @@ export default function ProjectsList(props: ProjectsListProps) {
         <List key={p.id}>
           <ListItem
             button
-            key='project'
+            key={`${p.id}-item`}
             onClick={(e) => selectProject(p)}
             selected={selectedProject?.azureId === p.azureId}
           >
