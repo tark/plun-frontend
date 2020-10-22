@@ -22,14 +22,17 @@ interface DayProps {
 export default function Day(props: DayProps) {
 
   const {plan, localPlan, onPlanChanged, loading} = props
-  const {entries, date} = plan || {}
+  const {entries: entriesRemote, date} = plan || {}
+  const {entries: entriesLocal} = localPlan || {}
   const todayMidnight = moment().set({hour: 0, minute: 0, second: 0, millisecond: 0})
+
+  const entries = [...entriesRemote ?? [], ...entriesLocal ?? []]
 
   const handleTaskStateChanged = (task: Task, state: string) => {
 
     onPlanChanged({
       ...plan,
-      entries: entries?.map((e) => {
+      entries: entriesRemote?.map((e) => {
         if (e.taskId === task.id) {
           return {...e, taskState: state}
         }
@@ -41,7 +44,7 @@ export default function Day(props: DayProps) {
   const handleTaskDelete = (task: Task) => {
     onPlanChanged({
       ...plan,
-      entries: entries?.filter((e) => e.taskId !== task.id)
+      entries: entriesRemote?.filter((e) => e.taskId !== task.id)
     })
   }
 
@@ -85,7 +88,7 @@ export default function Day(props: DayProps) {
         onDeletePressed={() => handleTaskDelete(e.task)}
         onStateChanged={(s: any) => handleTaskStateChanged(e.task, s)}
         stateChanging={false}
-        isLocal={localPlan?.entries.some((e1) => e1.taskId === e.task.id) ?? false}
+        isLocal={entriesLocal?.some((e1) => e1.taskId === e.task.id) ?? false}
         date={moment(date)}
         state={e.taskState}
       />
