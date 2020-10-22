@@ -38,7 +38,12 @@ export default function TaskSelector(props: TaskSelectorProps) {
       return
     }
     const tasksFromApi = await getSuggestions(org, project, query, token)
-    setTasks(tasksFromApi)
+    setTasks(tasksFromApi.map((t) => (
+      {
+        task: t,
+        new: false,
+      }
+    )))
   }
 
   const delayedQuery = useCallback(debounce(sendQuery, 300), []);
@@ -68,7 +73,7 @@ export default function TaskSelector(props: TaskSelectorProps) {
           return `Add "${taskWrapper.task.name}"`;
         }
 
-        return taskWrapper.task.name;
+        return taskWrapper.task?.name ?? '';
       }}
       renderInput={(params) => <TextField
         {...params}
