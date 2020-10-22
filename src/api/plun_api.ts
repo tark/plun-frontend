@@ -22,12 +22,12 @@ export const authToAzureByUserId = async (userId: string) => {
 }
 
 export const getOrganizations = async (token: string) => {
-  console.log(`getOrganizations - ${token}`)
+  console.log(`getOrganizations`)
   return get('organizations', {token})
 }
 
 export const getProjects = async (organizationName: string, token: string) => {
-  console.log(`getProjects - ${token}`)
+  console.log(`getProjects`)
   return get('projects', {organizationName, token})
 }
 
@@ -36,7 +36,7 @@ export const getSuggestions = async (
   projectName: string,
   query: string,
   token: string
-) => {
+) : Promise<Array<Task>> => {
   console.log(`getSuggestions - ${organizationName}, ${projectName}, ${query}`)
   const result = await get('tasks-suggestions', {organizationName, projectName, query, token})
   console.log(`getSuggestions - ${result}`)
