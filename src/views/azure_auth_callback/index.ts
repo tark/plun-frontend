@@ -1,3 +1,3 @@
-import AzureAuthCallback from './AzureAuthCallback'
+import {AzureAuthCallback} from './AzureAuthCallback'
 
 export default AzureAuthCallback
