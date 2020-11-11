@@ -5,11 +5,9 @@ import green from '@material-ui/core/colors/green';
 import yellow from '@material-ui/core/colors/yellow';
 import Button from '@material-ui/core/Button';
 import PlaylistAddCheckIcon from '@material-ui/icons/PlaylistAddCheck';
-import {defaultTasks, ListStatus, tasksNames, TaskStatus} from '../../../config/constants';
+import {defaultTasks, ListStatus} from '../../../config/constants';
 import TaskItem from '../task_item'
-import TaskSelector from '../task_selector'
 import {Task} from '../../../api/models/models';
-import moment from 'moment';
 
 interface TasksListProps {
   tasksList: any;
@@ -85,14 +83,16 @@ export default function TasksList(props: TasksListProps) {
     {innerTasks.map(t => <TaskItem
       task={t}
       state='created'
-      showDeleteButton={listStatus === ListStatus.planning}
       onDeletePressed={onDeletePressed}
-      date={moment()}
-      isLocal={false}
+      date=''
       onStateChanged={(s: any) => {
       }}
       showState={false}
       stateChanging={false}
+      taskInNextPlan={false}
+      onCopyToNexPlanPressed={() => {
+
+      }}
     />)}
 
     {listStatus === ListStatus.planning && <div style={{marginLeft: 10, marginRight: 10}}>
