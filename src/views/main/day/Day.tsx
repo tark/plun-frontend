@@ -1,61 +1,151 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import moment from 'moment';
+import {Card} from '@material-ui/core';
 import ContentLoader from 'react-content-loader';
+import {useDispatch, useSelector} from 'react-redux';
+import classNames from 'classnames';
 import TaskItem from '../../landing/task_item';
-import {Plan, Task} from '../../../api/models/models';
+import {Plan, PlanEntry, Task, TaskState} from '../../../api/models/models';
 import './day.css';
+import TaskSelector from '../../landing/task_selector';
+import {DATE_FORMAT} from '../../../config/constants';
+import {planSelectors} from '../../../store/slices/plan_slice';
+import {fetchPlan, updatePlan, createPlan} from '../../../services/plan_service';
+import {profileSelectors} from '../../../store/slices/profile_slice';
 
 interface DayProps {
-  plan?: Plan,
-  localPlan?: Plan,
-  onPlanChanged: Function,
-  // using special flag instead of stay on plan == null
-  // because after loaded plan still can be null
-  loading?: boolean,
+  date: string,
+  onCopyToNextPlanPressed?: (date: string, task: Task) => void,
 }
 
 /**
- * Show tasks for today
+ * Show plan for the given date
  * @param props
  * @constructor
  */
 export default function Day(props: DayProps) {
 
-  const {plan, localPlan, onPlanChanged, loading} = props
-  const {entries: entriesRemote, date} = plan || {}
-  const {entries: entriesLocal} = localPlan || {}
+  const {date} = props
+
+  const selectedOrganization = useSelector(profileSelectors.selectedOrganization)
+  const selectedProject = useSelector(profileSelectors.selectedProject)
+  const plan: Plan = useSelector(planSelectors.plan)[date]
+  const planLoading: boolean = useSelector(planSelectors.planLoading)[date]
+  const planError: string | null = useSelector(planSelectors.planError)[date]
+  const dispatch = useDispatch()
+  const showTaskSelector = moment().startOf('date').format(DATE_FORMAT) === date
+
+  const {
+    onCopyToNextPlanPressed,
+  } = props
+  const {entries} = plan || {}
+  //const {entries: entriesNext} = nextPlan || {}
   const todayMidnight = moment().set({hour: 0, minute: 0, second: 0, millisecond: 0})
 
-  const entries = [...entriesRemote ?? [], ...entriesLocal ?? []]
+  useEffect(() => {
+    if (selectedOrganization && selectedProject) {
+      console.log(`fetching plan from  - ${date}, ${selectedOrganization.name}, ${selectedProject.name}`)
+      dispatch(fetchPlan({
+        date,
+        organizationName: selectedOrganization?.name,
+        projectName: selectedProject?.name
+      }))
+    }
+  }, [selectedOrganization, selectedProject])
 
-  const handleTaskStateChanged = (task: Task, state: string) => {
-
-    onPlanChanged({
+  const handleTaskStateChanged = async (task: Task, state: TaskState) => {
+    if (!plan) {
+      return
+    }
+    dispatch(updatePlan({
       ...plan,
-      entries: entriesRemote?.map((e) => {
-        if (e.taskId === task.id) {
-          return {...e, taskState: state}
+      entries: entries?.map((e) => ({
+        ...e,
+        taskState: e.taskId === task.id ? state : e.taskState
+      })) ?? []
+    }))
+  }
+
+  const handleCopyToNextPlanPressed = async (task: Task) => {
+    if (!onCopyToNextPlanPressed) {
+      return
+    }
+    onCopyToNextPlanPressed(date ?? '', task);
+  }
+
+  const handleTaskDelete = async (task: Task) => {
+    if (!plan) {
+      return
+    }
+    dispatch(updatePlan({
+      ...plan,
+      entries: entries?.filter((e) => e.taskId !== task.id) ?? []
+    }))
+  }
+
+  const inEntriesNext = (entry: PlanEntry): boolean => {
+    // todo fix it
+    //return entriesNext?.some((e1) => e1.taskId === entry.taskId) ?? false
+    return false;
+  }
+
+  const onTaskSelected = async (task: Task) => {
+
+    console.log(`onTaskSelected - ${task}`)
+
+    // if there was no plan - create a new plan, put task here and save the plan
+    if (!plan) {
+      dispatch(createPlan(
+        {
+          plan: {
+            date: moment().format(DATE_FORMAT),
+            entries: [
+              {
+                taskId: '',
+                taskState: 'created',
+                task,
+              }
+            ]
+          },
+          organizationName: selectedOrganization?.name ?? '',
+          projectName: selectedProject?.name ?? '',
         }
-        return e
-      })
-    })
+      ))
+    } else {
+
+      if (plan.entries.some((e) => e.task.azureId === task.azureId)) {
+        return
+      }
+
+      dispatch(updatePlan({
+        ...plan,
+        entries: [
+          ...plan.entries,
+          {
+            task,
+            taskId: '',
+            taskState: 'created',
+          }
+        ]
+      }))
+
+    }
   }
 
-  const handleTaskDelete = (task: Task) => {
-    onPlanChanged({
-      ...plan,
-      entries: entriesRemote?.filter((e) => e.taskId !== task.id)
-    })
-  }
+  return <Card
+    className={classNames('day', {day_empty: !entries || !entries.length})}
+    variant={!entries || !entries.length ? 'outlined' : 'elevation'}>
 
-  return <div>
-
-    <div>
+    <div className='date_title'>
       <b>{moment(date).format('dddd')}</b>
-      <span style={{color: '#bbb'}}> - {moment(date).format('MMM D')}</span>
+      <span style={{color: '#bbb'}}>
+{' '}
+        -
+        {moment(date).format('MMM D')}
+</span>
     </div>
 
-    {loading && <div>
+    {planLoading && <div>
       <ContentLoader
         speed={2}
         width={500}
@@ -77,22 +167,23 @@ export default function Day(props: DayProps) {
       </ContentLoader>
     </div>}
 
-    {!loading && !plan && <div className='placeholder'>No tasks for today. Create your first one.</div>}
-
     {entries && entries.map(e => (
       <TaskItem
         key={e.task.id}
         task={e.task}
-        showDeleteButton={todayMidnight < moment(date)}
+        taskInNextPlan={inEntriesNext(e)}
         showState={todayMidnight > moment(date)}
-        onDeletePressed={() => handleTaskDelete(e.task)}
-        onStateChanged={(s: any) => handleTaskStateChanged(e.task, s)}
+        onDeletePressed={handleTaskDelete}
+        onCopyToNexPlanPressed={handleCopyToNextPlanPressed}
+        onStateChanged={handleTaskStateChanged}
         stateChanging={false}
-        isLocal={entriesLocal?.some((e1) => e1.taskId === e.task.id) ?? false}
-        date={moment(date)}
+        date={date ?? ''}
         state={e.taskState}
       />
     ))}
-  </div>
+
+    {showTaskSelector && <TaskSelector onTaskSelect={onTaskSelected}/>}
+
+  </Card>
 
 }
