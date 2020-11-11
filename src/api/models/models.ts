@@ -40,6 +40,13 @@ export type PlanEntry = {
   task: Task,
 }
 
+export type AzureAuthResponse = {
+  accessToken: string,
+  tokenType: string,
+  expiresIn: number,
+  refreshToken: string,
+}
+
 export type TaskState = 'created' | 'done' | 'progress' | 'failed' | 'cancelled'
 
 
