@@ -1,64 +1,45 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect} from 'react'
 import queryString from 'querystring'
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Close from '@material-ui/icons/Close';
-import Done from '@material-ui/icons/Done';
-import {getToken} from '../../api/plun_api';
+import {useDispatch, useSelector} from 'react-redux';
+import {useHistory} from 'react-router-dom';
+import {profileSelectors} from '../../store/slices/profile_slice';
+import {auth} from '../../services/profile_service';
+import '../login/login.css'
+import Loader from '../components/loader';
 
-export default function AzureAuthCallback(props: any) {
-
-  const [authInProgress, setAuthInProgress] = useState(false);
-  const [authSuccess, setAuthSuccess] = useState(false);
-  const [authFail, setAuthFail] = useState(false);
+export const AzureAuthCallback: React.FC = () => {
+  const dispatch = useDispatch()
+  const history = useHistory()
+  const authError = useSelector(profileSelectors.authError)
+  const profile = useSelector(profileSelectors.profile)
 
   useEffect(() => {
-    authToAzure().then();
+    // on start - get the code from url and auth
+    const search = window.location.search.replace('?', '')
+    console.log(`search - ${search}`)
+    const {code} = queryString.parse(search)
+    dispatch(auth(code?.toString() ?? ''))
   }, [])
 
-  const authToAzure = async () => {
-    const search = window.location.search.replace('?', '')
-    //var x: string | string[] = null
-    //var y = x as string
-    const {code} = queryString.parse(search)
-    try {
-      setAuthInProgress(true)
-      const token = await getToken(code?.toString() ?? '')
-      if (token) {
-        setAuthSuccess(true)
-        window.location.assign(`https://localhost:3000/app?authResult=success&token=${token}`)
-      } else {
-        setAuthFail(true)
-        window.location.assign('https://localhost:3000/app?authResult=fail')
-      }
-    } catch (e) {
-      console.log(`authToAzure - ${e}`)
-      setAuthFail(true)
-      window.location.assign(`https://localhost:3000/app?authResult=fail&reason=${e}`)
+  useEffect(() => {
+    if (profile) {
+      history.push('/login')
     }
-  }
+  }, [profile])
 
-  const handleSuccessClose = (event: any, reason: any) => {
-    if (reason === 'clickaway') {
-      return;
+  useEffect(() => {
+    if (authError) {
+      history.push('/login')
     }
-    setAuthSuccess(false);
-  };
+  }, [authError])
 
-  const handleFailClose = (event: any, reason: any) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setAuthSuccess(false);
-  };
-
-  return <div>
-
-    {authInProgress && <CircularProgress/>}
-
-    {authFail && <Close/>}
-
-    {authSuccess && <Done/>}
-
+  return <div className='login'>
+    <div className='redirect-message-container'>
+      <div className='login-message mb-3'>
+        Logging in...
+      </div>
+      <Loader/>
+    </div>
   </div>
 }
 
