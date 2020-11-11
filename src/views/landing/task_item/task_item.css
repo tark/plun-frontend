@@ -1,16 +1,27 @@
-.task-management-icon {
-  width: 14px;
-  height: 14px;
-  margin-top: 12px;
-  filter: grayscale(100%);
-  opacity: 0.7;
-}
-
 .task {
   font-size: 1rem;
+  padding: 0 4px 0 12px;
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  /*border-top: #e5e6e7 solid 1px;*/
+}
+
+.task:hover {
+background: #f2f3f4;
+}
+
+a {
+  color: #0056b3;
+  text-decoration: underline;
 }
 
 .task-title {
+  padding-left: 0.3rem;
+  line-height: 1.5rem;
+}
+
+.task-title-url {
   padding-left: 0.3rem;
   margin-top: 0.45rem;
   line-height: 1.5rem;
@@ -24,11 +35,33 @@
   text-decoration: none;
 }
 
+.status-icon-container {
+  width: 30px;
+}
+
 .status-icon {
   margin: 9px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.icon-bullet {
+  font-size: 8px;
+  color: #bbb;
+}
+
+.action-icon {
+  margin: 0 9px 0 9px;
   width: 20px !important;
   height: 20px !important;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #bbb;
 }
 
 .done {
