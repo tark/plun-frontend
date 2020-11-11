@@ -1,0 +1,29 @@
+.login {
+  background: #f2f3f4 !important;
+  height: 100vh;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-message {
+  font-size: 1.5rem;
+  color: #222;
+}
+
+.redirect-message-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.redirect-loader {
+  margin-top: 20px;
+}
+
+.login-button {
+  margin-top: 20px;
+}
