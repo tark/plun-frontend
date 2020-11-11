@@ -1,5 +1,4 @@
-import {object, string, func} from 'prop-types'
-import React, {useEffect, useState} from 'react'
+import React, {useEffect} from 'react'
 import './main.css';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -7,54 +6,33 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import BusinessIcon from '@material-ui/icons/Business';
 import Divider from '@material-ui/core/Divider';
-import {getOrganizations} from '../../api/plun_api';
+import {useDispatch, useSelector} from 'react-redux';
 import ProjectsList from './ProjectsList';
 import Loader from '../components/loader';
-import {Organization, Project} from '../../api/models/models';
+import {fetchOrganizations} from '../../services/profile_service';
+import {profileSelectors, selectOrganization} from '../../store/slices/profile_slice';
 
-interface OrganizationsListProps {
-  token: string;
-  onChangeOrganization: Function;
-  onChangeProject: Function;
-}
+export default function OrganizationsList(props: any) {
 
-export default function OrganizationsList(props: OrganizationsListProps) {
-
-  const [organizations, setOrganizations] = useState<Array<Organization>>()
-  const [fetchingOrganizations, setFetchingOrganizations] = useState(false)
-  const [selectedOrganization, setSelectedOrganization] = useState<Organization>()
-
-  const {token, onChangeOrganization, onChangeProject} = props
+  const dispatch = useDispatch()
+  const organizations = useSelector(profileSelectors.organizations)
+  const organizationsLoading = useSelector(profileSelectors.organizationsLoading)
+  const selectedOrganization = useSelector(profileSelectors.selectedOrganization)
 
   useEffect(() => {
-    fetchOrganizations().then()
-  }, [token])
+    dispatch(fetchOrganizations())
+  }, [])
 
-  const fetchOrganizations = async () => {
-    setFetchingOrganizations(true)
-    const orgs = await getOrganizations(token)
-    setOrganizations(orgs)
-    selectOrganization(orgs[0])
-    setFetchingOrganizations(false)
-  }
-
-  const selectOrganization = (o: Organization) => {
-    setSelectedOrganization(o)
-    if (onChangeOrganization) {
-      onChangeOrganization(o)
+  useEffect(() => {
+    if (organizations) {
+      dispatch(selectOrganization(organizations[0]))
     }
-  }
-
-  const onProjectSelected = (p: Project) => {
-    if (onChangeProject) {
-      onChangeProject(p)
-    }
-  }
+  }, [organizations])
 
   return (
     <div>
 
-      {fetchingOrganizations && <Loader/>}
+      {organizationsLoading && <Loader/>}
 
       {organizations && !organizations.length && (
         <div>No projects for this organization</div>
@@ -67,15 +45,11 @@ export default function OrganizationsList(props: OrganizationsListProps) {
               button
               key='project'
               selected={selectedOrganization?.azureId === o.azureId}
-              onClick={() => selectOrganization(o)}>
+              onClick={() => dispatch(selectOrganization(o))}>
               <ListItemIcon><BusinessIcon/></ListItemIcon>
               <ListItemText primary={o.name}/>
             </ListItem>
-            <ProjectsList
-              organization={o}
-              token={token}
-              onChange={onProjectSelected}
-            />
+            <ProjectsList organization={o}/>
           </List>
           <Divider/>
         </div>
