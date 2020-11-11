@@ -3,29 +3,32 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import {BrowserRouter, Switch, Route} from 'react-router-dom';
+import {Provider} from 'react-redux';
+import { enableMapSet } from 'immer'
 import * as serviceWorker from './serviceWorker';
 import AzureAuthCallback from './views/azure_auth_callback';
 import Main from './views/main/Main';
 import Landing from './views/landing';
-import Store from './store/store'
+import {Login} from './views/login/Login';
+import {store} from './store'
+import {configureApi} from './api/plun_api';
 
-const store = new Store();
+enableMapSet()
+
+configureApi()
 
 ReactDOM.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <Switch>
-        <Route path="/azure-auth-callback">
-          <AzureAuthCallback store={store}/>
-        </Route>
-        <Route path="/app">
-          <Main store={store}/>
-        </Route>
-        <Route path="/">
-          <Landing/>
-        </Route>
-      </Switch>
-    </BrowserRouter>
+    <Provider store={store}>
+      <BrowserRouter>
+        <Switch>
+          <Route path="/azure-auth-callback" component={AzureAuthCallback}/>
+          <Route path="/app" component={Main}/>
+          <Route path="/login" component={Login}/>
+          <Route path="/" component={Landing}/>
+        </Switch>
+      </BrowserRouter>
+    </Provider>
   </React.StrictMode>,
   document.getElementById('root')
 );
