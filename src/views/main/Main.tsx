@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react'
+import {useDispatch, useSelector} from 'react-redux'
 import Button from '@material-ui/core/Button';
-import queryString from 'querystring'
 import './main.css';
 import Drawer from '@material-ui/core/Drawer';
 import List from '@material-ui/core/List';
@@ -9,268 +9,81 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
-import moment from 'moment';
-import {
-  authToAzureByUserId, createPlan,
-  deleteTask, getPlanForToday,
-  getPreviousNearestPlan,
-  getProfile,
-  planTasks, updatePlan,
-  updateTask
-} from '../../api/plun_api';
+import moment, {Moment} from 'moment';
+import copy from 'copy-to-clipboard';
+import {useHistory} from 'react-router-dom';
 import OrganizationsList from './OrganizationsList';
-import {UnauthorizedError} from '../../api/unauthorized_error';
-import TaskSelector from '../landing/task_selector';
 import Loader from '../components/loader';
 import Day from './day/index';
-import {DATE_FORMAT, TaskStatus} from '../../config/constants';
+import {DATE_FORMAT} from '../../config/constants';
 import {iconByTaskState} from '../../util/task_util';
-import {Organization, Plan, PlanEntry, Project, Task, User} from '../../api/models/models';
+import {Plan, PlanEntry, Task} from '../../api/models/models';
+import {profileSelectors} from '../../store/slices/profile_slice';
+import {fetchProfile} from '../../services/profile_service';
+import {planSelectors} from '../../store/slices/plan_slice';
+import {createPlan, updatePlan} from '../../services/plan_service';
 
 export default function Main(props: any) {
 
-  const [loggedIn, setLoggedIn] = useState(false)
-  const [logging, setLogging] = useState(false)
-  const [user, setUser] = useState<User>()
-  const [authFailed, setAuthFailed] = useState(false)
-  const [selectedOrganization, setSelectedOrganization] = useState<Organization>()
-  const [selectedProject, setSelectedProject] = useState<Project>()
-  const [previousPlan, setPreviousPlan] = useState<Plan>()
-  // local tasks created here on client as a suggestion
-  // for today plan
-  const [todayLocalPlan, setTodayLocalPlan] = useState<Plan>()
-  const [todayPlan, setTodayPlan] = useState<Plan>()
-  const [planForTodaySaved, setPlanForTodaySaved] = useState(false)
-  const [savingPlan, setSavingPlan] = useState(false)
-  const [error, setError] = useState(null)
-  const [loadingTodayPlan, setLoadingTodayPlan] = useState(false)
-  const [loadingPreviousPlan, setLoadingPreviousPlan] = useState(false)
+  const dispatch = useDispatch()
 
-  const token = localStorage.getItem('token');
+  const profile = useSelector(profileSelectors.profile)
+  const unauthorized = useSelector(profileSelectors.unauthorized)
+  const history = useHistory()
+  const todayPlan: Plan = useSelector(planSelectors.plan)[moment().format(DATE_FORMAT)]
+  const previousPlan = todayPlan
+  const [error, setError] = useState('Super error')
+  const selectedOrganization = useSelector(profileSelectors.selectedOrganization)
+  const selectedProject = useSelector(profileSelectors.selectedProject)
 
   useEffect(() => {
-    const search = window.location.search.replace('?', '')
-    const {authResult, token: tokenFromQuery} = queryString.parse(search)
-
-    if (authResult === undefined) {
-      initData().then()
-    } else {
-      initDataFromAuthResult(authResult, tokenFromQuery).then()
+    if (!profile) {
+      dispatch(fetchProfile())
     }
   }, [])
 
   useEffect(() => {
-    if (selectedOrganization && selectedProject) {
-      refreshTodayAndPreviousDayTasks()
+    if (unauthorized) {
+      // unauthorized is not our problem
+      // let's [Home.tsx] fix it
+      history.push('/login')
     }
-  }, [selectedProject, selectedOrganization])
-
-  const authByAuthCode = async () => {
-    console.log('authByAuthCode')
-    const appId = process.env.REACT_APP_AZURE_APP_ID
-    const state = 'User name'
-    const scope = 'vso.work_full'
-    const callbackUrl = process.env.REACT_APP_AZURE_CALLBACK_URL
-    const authUrl = new URL('https://app.vssps.visualstudio.com/oauth2/authorize')
-
-    authUrl.search = queryString.stringify({
-      client_id: appId,
-      response_type: 'Assertion',
-      state,
-      scope,
-      redirect_uri: callbackUrl,
-    });
-
-    window.location.href = authUrl.toString()
-  }
-
-  const initData = async () => {
-
-    setLogging(true)
-
-    if (!token) {
-      setLoggedIn(false)
-      authByAuthCode().then()
-      return;
-    }
-
-    setLoggedIn(true)
-
-    try {
-      const profile = await getProfile(token)
-      console.log(`initData - ${JSON.stringify(profile)}`)
-      setUser(profile)
-
-    } catch (e) {
-      console.log(`initData - error - ${e}`)
-      setLoggedIn(false)
-      authByAuthCode().then()
-    }
-
-  }
-
-  /**
-   * Handle case when we just have redirected from AzureAuthCallback page
-   * @returns {Promise<void>}
-   */
-  const initDataFromAuthResult = async (authResult: any, tokenToSave: any) => {
-    if (authResult) {
-      localStorage.setItem('token', tokenToSave);
-      window.location.assign('https://localhost:3000/app')
-    } else {
-      setAuthFailed(true)
-    }
-  }
-
-  const loginOnStart = async () => {
-    let userId: string = '';
-    if (user) {
-      userId = user?.id;
-    }
-
-    if (!userId) {
-      userId = localStorage.getItem('userId') ?? '';
-    }
-
-    if (!userId) {
-      const search = window.location.search.replace('?', '')
-      userId = queryString.parse(search).userId?.toString() ?? ''
-    }
-
-    // if for the moment we still haven't user id = go and login by code
-    // and quit, because the next time we get back here he should have a user id
-    if (!userId) {
-      authByAuthCode().then()
-      return;
-    }
-
-    // otherwise we consider to HAVE a user id
-    try {
-      // trying to login with it's id
-      setLogging(true)
-      const authUser = await authToAzureByUserId(userId)
-      setLogging(false)
-      //store.setUser(authUser)
-      //setAuthSuccess(true);
-
-    } catch (e) {
-      if (e instanceof UnauthorizedError) {
-        authByAuthCode()
-      }
-    }
-  }
-
-  const onTaskSelected = async (task: Task) => {
-    console.log(`onTaskSelected - ${task}`)
-
-    // if there was no plan - create a new plan, put task here and save the plan
-
-    if (!todayPlan) {
-      await createPlan({
-        date: moment().format(DATE_FORMAT),
-        entries: [
-          {
-            taskId: '',
-            taskState: 'created',
-            task,
-          }
-        ]
-      })
-    } else {
-
-      if (todayPlan.entries.some((e) => e.task.azureId === task.azureId)) {
-        return
-      }
-
-      await updatePlan({
-        ...todayPlan,
-        entries: [
-          ...todayPlan.entries,
-          {
-            task,
-            taskId: '',
-            taskState: 'created',
-          }
-        ]
-      })
-    }
-
-    await refreshTodayAndPreviousDayTasks()
-  }
-
-  const planTask = async (task: Task) => {
-    if (!task) {
-      return
-    }
-    try {
-      setSavingPlan(true)
-      await planTasks([task])
-      setSavingPlan(false)
-    } catch (e) {
-      setSavingPlan(false)
-      setError(e)
-    }
-  }
-
-  const refreshTodayAndPreviousDayTasks = async () => {
-    try {
-
-      setLoadingPreviousPlan(true)
-      const prevPlan = await getPreviousNearestPlan(
-        selectedOrganization?.name ?? '',
-        selectedProject?.name ?? '',
-        token ?? ''
-      )
-      setPreviousPlan(prevPlan);
-      setLoadingPreviousPlan(false)
-
-      setLoadingTodayPlan(true)
-      const todayPlanFromApi = await getPlanForToday(
-        selectedOrganization?.name ?? '',
-        selectedProject?.name ?? '',
-        token ?? ''
-      )
-      setTodayPlan(todayPlanFromApi);
-      setLoadingTodayPlan(false)
-
-      const todayPlanLocal = {
-        date: moment().format(DATE_FORMAT),
-        entries: prevPlan.entries?.filter((e) => {
-          // skip if it already planned on a server side
-          return todayPlanFromApi?.entries?.every((e1) => e1.taskId !== e.taskId)
-            // and take from prev plan created or in progress
-            && (e.taskState === TaskStatus.created || e.taskState === TaskStatus.progress)
-        })
-      };
-      setTodayLocalPlan(todayPlanLocal);
-      setPlanForTodaySaved(false);
-    } catch (e) {
-      setError(e)
-    }
-  }
-
-  const onTaskDelete = async (task: Task) => {
-    console.log(`onTaskDelete - ${JSON.stringify(task, null, 2)}`)
-    await deleteTask(task)
-    await refreshTodayAndPreviousDayTasks()
-  }
-
-  const onTaskStateChanged = async (task: Task) => {
-    console.log(`onTaskStateChanged - ${JSON.stringify(task)}`)
-    await updateTask(task)
-    await refreshTodayAndPreviousDayTasks()
-  }
+  }, [unauthorized])
 
   /**
    * Get a list of tasks and returns a formatted message that can be inserted to the chats
    */
-  const planToMessage = (plan?: Plan) => {
+  const plansToMessage = () => {
 
-    if (!plan || !plan.entries || !plan.entries.length) {
-      return ''
+    if (!previousPlan || !previousPlan.entries || !previousPlan.entries.length) {
+      return 'There is no previous plan'
     }
 
-    let result = '<div>'
+    if (!todayPlan || !todayPlan.entries || !todayPlan.entries.length) {
+      return 'There is no today plan'
+    }
+
+    let result = planToMessage(previousPlan, true)
+    result += '\r\n'
+    result += '<p/>'
+    result += '\r\n'
+    result += planToMessage(todayPlan)
+
+    return result
+  }
+
+  const planToMessage = (plan: Plan, showStates?: boolean): string => {
+
+
+    if (!previousPlan || !previousPlan.entries || !previousPlan.entries.length) {
+      return 'There is no previous plan'
+    }
+
+    if (!todayPlan || !todayPlan.entries || !todayPlan.entries.length) {
+      return 'There is no today plan'
+    }
+
+    let result = '<div style="font-size: 14px">'
     result += '<div>'
       + `<b>${moment(plan.date).format('dddd')}</b>`
       + `<span style='color: "#bbb"'>, ${moment(plan.date).format('MMM D')}</span>`
@@ -283,6 +96,9 @@ export default function Main(props: any) {
       if (icon) {
         icon += ' '
       }
+      if (!showStates) {
+        icon = ''
+      }
       if (azureUrl) {
         result += `<p>- ${icon}<a href='${azureUrl}'>${name}</a></p>`
       } else {
@@ -294,19 +110,96 @@ export default function Main(props: any) {
     return result
   }
 
-  const onSavePlanClick = async () => {
-    if (!todayLocalPlan) {
-      return
+  const onCopyToNextPlanPressed = async (date: string, task: Task) => {
+    //console.log(`handleCopyToNextPlanPressed - nextPlan - ${JSON.stringify(nextPlan)}`)
+
+    try {
+      const newEntry: PlanEntry = {
+        taskId: '',
+        taskState: 'created',
+        task,
+      }
+
+      if (!todayPlan) {
+        dispatch(createPlan({
+          plan: {
+            date: moment().format(DATE_FORMAT),
+            entries: [newEntry],
+          },
+          organizationName: selectedOrganization?.name ?? '',
+          projectName: selectedProject?.name ?? '',
+        }));
+      } else {
+        dispatch(updatePlan({
+          ...todayPlan,
+          entries: [
+            ...todayPlan?.entries ?? [],
+            newEntry
+          ]
+        }))
+      }
+    } catch (e) {
+      setError(e)
     }
-    await createPlan(todayLocalPlan)
-    setPlanForTodaySaved(true)
   }
 
-  const onPlanChanged = async (plan: Plan) => {
-    if (!plan) {
-      return
+  // This function expects an HTML string and copies it as rich text.
+  const copyFormatted = (html: string) => {
+    // Create container for the HTML
+    // [1]
+    const container = document.createElement('div')
+    container.innerHTML = html
+
+    // Hide element
+    // [2]
+    container.style.position = 'fixed'
+    container.style.pointerEvents = 'none'
+    container.style.opacity = '0'
+
+    // Detect all style sheets of the page
+    const activeSheets = Array.prototype.slice.call(document.styleSheets)
+      .filter((sheet) => {
+        return !sheet.disabled
+      })
+
+    // Mount the container to the DOM to make `contentWindow` available
+    // [3]
+    document.body.appendChild(container)
+
+    // Copy to clipboard
+    // [4]
+    // eslint-disable-next-line no-unused-expressions
+    window?.getSelection()?.removeAllRanges()
+
+    const range = document.createRange()
+    range.selectNode(container)
+    // eslint-disable-next-line no-unused-expressions
+    window?.getSelection()?.addRange(range)
+
+    // [5.1]
+    document.execCommand('copy')
+
+    // [5.2]
+    for (let i = 0; i < activeSheets.length; i++) activeSheets[i].disabled = true
+
+    // [5.3]
+    document.execCommand('copy')
+
+    // [5.4]
+    for (let i = 0; i < activeSheets.length; i++) activeSheets[i].disabled = false
+
+    // Remove the container
+    // [6]
+    document.body.removeChild(container)
+  }
+
+  const dates = (): Array<Moment> => {
+    const datesArray: Array<Moment> = [];
+    const days = 10;
+    for (let i = 0; i < days; i++) {
+      datesArray.push(moment().subtract(days - i - 1, 'day'))
     }
-    await updatePlan(plan)
+    return datesArray
   }
 
   return <div className='main'>
@@ -318,21 +211,17 @@ export default function Main(props: any) {
 
       <List>
 
-        {!user && <Loader/>}
+        {!profile && <Loader/>}
 
-        {user && <ListItem button key={user.name}>
-          <ListItemText primary={user.name}/>
+        {profile && <ListItem button key={profile.name}>
+          <ListItemText primary={profile.name}/>
         </ListItem>}
 
         <Divider/>
 
-        {!user && <Loader/>}
+        {!profile && <Loader/>}
 
-        {user && <OrganizationsList
-          token={token ?? ''}
-          onChangeOrganization={setSelectedOrganization}
-          onChangeProject={setSelectedProject}
-        />}
+        {profile && <OrganizationsList/>}
 
       </List>
 
@@ -340,59 +229,35 @@ export default function Main(props: any) {
 
     <div className='content'>
 
-      {/* previous day - show result */}
-      {previousPlan && <Day
-        plan={previousPlan}
-        onPlanChanged={onPlanChanged}
-      />}
+      {dates().map(d => <Day
+        date={d.format(DATE_FORMAT)}
+        onCopyToNextPlanPressed={onCopyToNextPlanPressed}
+      />)}
 
-      {/* current day - show the plan */}
-      <div className='mt-5'>
-        <Day
-          plan={todayPlan}
-          localPlan={todayLocalPlan}
-          onPlanChanged={onPlanChanged}
-          loading={loadingTodayPlan || loadingPreviousPlan || !selectedProject || !selectedOrganization}
-        />
-      </div>
-
-      <TaskSelector
-        organizationName={selectedOrganization ? selectedOrganization.name : ''}
-        projectName={selectedProject ? selectedProject.name : ''}
-        token={token ?? ''}
-        onTaskSelect={onTaskSelected}/>
-
-      {planForTodaySaved && <div className='mt-3'>
+      <div className='mt-3'>
         <Button
           variant='contained'
           color='primary'
-          onClick={e => {
-            console.log(planToMessage(previousPlan))
+          onClick={_ => {
+            console.log(plansToMessage())
             // use a type script version of copy-to-clipboard
-            //copy(tasksToMessage(moment(), previousTasks), {asHtml: true})
+            //copy('test')
+            //copy(plansToMessage())
+            copyFormatted(plansToMessage())
           }}>
           Copy
         </Button>
-      </div>}
-
-      {!planForTodaySaved && <div className='mt-3'>
-        <Button
-          variant='contained'
-          color='primary'
-          onClick={onSavePlanClick}>
-          Save plan
-        </Button>
-      </div>}
+      </div>
 
     </div>
 
     <Snackbar
       open={!!error}
       autoHideDuration={6000}
-      onClose={() => setError(null)}>
+      onClose={() => setError('')}>
       <Alert
-        onClose={() => setError(null)}
-        severity="success">
+        onClose={() => setError('')}
+        severity="error">
         {error}
       </Alert>
     </Snackbar>
