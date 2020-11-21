@@ -19,6 +19,7 @@
 .main {
   display: flex;
   background: #f2f3f4;
+  height: 100vh;
 }
 
 .content {
