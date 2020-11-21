@@ -6,11 +6,17 @@ export type FetchPlanParams = {
   organizationName: string,
   projectName: string,
   date: string,
+  userId: string,
+}
+
+export type FetchPlansParams = {
+  organizationName: string,
+  projectName: string,
+  dateFrom: string,
+  dateTo: string,
 }
 
 export type CreatePlanParams = {
-  organizationName: string,
-  projectName: string,
   plan: Plan,
 }
 
@@ -26,13 +32,40 @@ interface ThunkApiType {
   rejectValue: ThunkError
 }
 
+/**
+ * Use fetchPlans instead
+ *
+ * @deprecated
+ */
 export const fetchPlan = createAsyncThunk<Plan, FetchPlanParams, ThunkApiType>(
   'plan/fetchPlan',
   async (args, {rejectWithValue}) => {
     console.log(`fetching plan - ${JSON.stringify(args)}`)
     try {
       // don't remove await word, otherwise catch will not work
-      return <Plan>(await api.getPlan(args.date, args.organizationName, args.projectName))
+      return <Plan>(await api.getPlan(args.organizationName, args.projectName, args.date))
+    } catch (e) {
+      console.log(`error - ${JSON.stringify(e.response)}`)
+      return rejectWithValue({
+        code: e.response.status,
+        message: e.response.statusText
+      })
+    }
+  }
+)
+
+export const fetchPlans = createAsyncThunk<Array<Plan>, FetchPlansParams, ThunkApiType>(
+  'plan/fetchPlans',
+  async (args, {rejectWithValue}) => {
+    console.log(`fetching plans - ${JSON.stringify(args)}`)
+    try {
+      // don't remove await word, otherwise catch will not work
+      return <Array<Plan>>(await api.getPlans(
+        args.organizationName,
+        args.projectName,
+        args.dateFrom,
+        args.dateTo,
+      ))
     } catch (e) {
       console.log(`error - ${JSON.stringify(e.response)}`)
       return rejectWithValue({
@@ -46,7 +79,7 @@ export const fetchPlan = createAsyncThunk<Plan, FetchPlanParams, ThunkApiType>(
 export const createPlan = createAsyncThunk<Plan, CreatePlanParams, ThunkApiType>(
   'plan/createPlan',
   async (params, {rejectWithValue}) => {
-    const {plan, organizationName, projectName} = params
+    const {plan} = params
 
     if (!plan) {
       return rejectWithValue({
@@ -57,7 +90,7 @@ export const createPlan = createAsyncThunk<Plan, CreatePlanParams, ThunkApiType>
 
     try {
       // don't remove await word, otherwise catch will not work
-      return await api.createPlan(plan, organizationName, projectName)
+      return await api.createPlan(plan)
     } catch (e) {
       console.log(`error - ${JSON.stringify(e.response)}`)
       return rejectWithValue({
