@@ -1,8 +1,14 @@
-import React, {useState, useCallback, ChangeEvent} from 'react'
+import React, {useState, useCallback, ChangeEvent, useReducer, useEffect} from 'react'
 import Autocomplete, {createFilterOptions} from '@material-ui/lab/Autocomplete';
 import './task_selector.css';
 import debounce from 'lodash/debounce';
 import {useDispatch, useSelector} from 'react-redux';
+import {
+  makeStyles,
+  Theme,
+  createStyles,
+  createMuiTheme, MuiThemeProvider
+} from '@material-ui/core/styles';
 import {Task} from '../../../api/models/models';
 import {tasksSelectors} from '../../../store/slices/tasks_slice';
 import {fetchSuggestions} from '../../../services/tasks_service';
@@ -20,6 +26,27 @@ type TaskWrapper = {
   new: boolean;
 }
 
+const useStyles = makeStyles((theme: Theme) => createStyles(
+  {
+    popper: {
+      marginTop: 10,
+    },
+    paper: {
+      elevation: 4,
+    },
+  }),
+);
+
+const paperTheme = createMuiTheme({
+  overrides: {
+    MuiPaper: {
+      root: {
+        elevation: 4,
+      },
+    },
+  }
+});
+
 export default function TaskSelector(props: TaskSelectorProps) {
 
   const dispatch = useDispatch()
@@ -32,15 +59,21 @@ export default function TaskSelector(props: TaskSelectorProps) {
   const [input, setInput] = useState('');
   const [selectedTask, setSelectedTask] = useState(null);
   const {onTaskSelect} = props
+  const [_, forceUpdate] = useReducer(x => x + 1, 0);
+  const classes = useStyles();
+
+  useEffect(() => {
+    // force re-render once we have a suggestions to show new suggestions in a dropdown
+    forceUpdate();
+  }, [suggestions])
 
   const sendQuery = async (org: string, project: string, query: string) => {
-    console.log(`sendQuery - ${org}, ${project}, ${query}`)
-    if (!query || !selectedOrganization || !selectedProject) {
+    if (!query || !org || !project) {
       return
     }
     dispatch(fetchSuggestions({
-      organizationName: selectedOrganization.name,
-      projectName: selectedProject.name,
+      organizationName: org,
+      projectName: project,
       query
     }))
   }
@@ -64,7 +97,7 @@ export default function TaskSelector(props: TaskSelectorProps) {
     }
   }
 
-  const taskWrappers = () : Array<TaskWrapper> => {
+  const taskWrappers = (): Array<TaskWrapper> => {
     return suggestions?.map((t) => (
       {
         task: t,
@@ -73,50 +106,56 @@ export default function TaskSelector(props: TaskSelectorProps) {
     )) ?? []
   }
 
-
   return <div className='task-selector-root'>
-    <Autocomplete
-      value={null}
-      inputValue={input}
-      options={taskWrappers()}
-      getOptionLabel={(taskWrapper: TaskWrapper) => {
-        if (taskWrapper.new) {
-          return `Add "${taskWrapper.task.name}"`;
-        }
+    <MuiThemeProvider theme={paperTheme}>
+      <Autocomplete
+        classes={{
+          popper: classes.popper,
+          paper: classes.paper,
+        }}
+        value={null}
+        inputValue={input}
+        options={taskWrappers()}
+        getOptionLabel={(taskWrapper: TaskWrapper) => {
+          if (taskWrapper.new) {
+            return `Add "${taskWrapper.task.name}"`;
+          }
 
-        return taskWrapper.task?.name ?? '';
-      }}
+          return taskWrapper.task?.name ?? '';
+        }}
+        renderInput={(params) => (
+          <div ref={params.InputProps.ref} className='input-wrapper'>
+            <input
+              {...params.inputProps}
+              type="text"
+              placeholder='+Add Task'
+            />
+          </div>
+        )}
+        filterOptions={(options, params) => {
+          const filtered = filter(options, params);
 
-      renderInput={(params) => (
-        <div ref={params.InputProps.ref} className='input-wrapper'>
-          <input
-            {...params.inputProps}
-            type="text"
-            placeholder='+Add Task'
-          />
-        </div>
-      )}
-      filterOptions={(options, params) => {
-        const filtered = filter(options, params);
+          // Suggest the creation of a new value
+          if (params.inputValue !== '') {
+            filtered.push({
+              new: true,
+              task: {
+                name: params.inputValue,
+                azureProjectName: '',
+                azureOrganizationName: '',
+              },
+            });
+          }
 
-        // Suggest the creation of a new value
-        if (params.inputValue !== '') {
-          filtered.push({
-            new: true,
-            task: {
-              name: params.inputValue,
-            },
-          });
-        }
-
-        return filtered;
-      }}
-      onInputChange={(event, newInputValue) => onInputChange(newInputValue)}
-      onChange={handleTaskSelect}
-      blurOnSelect
-      handleHomeEndKeys
-      clearOnBlur
-    />
+          return filtered;
+        }}
+        onInputChange={(event, newInputValue) => onInputChange(newInputValue)}
+        onChange={handleTaskSelect}
+        blurOnSelect
+        handleHomeEndKeys
+        clearOnBlur
+      />
+    </MuiThemeProvider>
   </div>
 
 }
