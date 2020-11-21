@@ -9,8 +9,8 @@ jobs:
       - checkout
       - node/with-cache:
           steps:
-            - run: npm install
-            - run: npm test
+            - run: yarn install
+            - run: yarn test
   deploy-master:
     docker:
       - image: circleci/node:11.1.0
