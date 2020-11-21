@@ -1,17 +1,44 @@
 import {createSlice} from '@reduxjs/toolkit'
 import {ReduxStore} from '../index';
-import {createPlan, fetchPlan, updatePlan} from '../../services/plan_service';
+import {createPlan, fetchPlans, updatePlan} from '../../services/plan_service';
+import {Plan} from '../../api/models/models';
 
 type PlanState = {
+  // Not using maps, because they are serialized badly.
+  // using plain objects
+
+  // plans: Map<date, Map<userId, Plan>>
   plans: any,
-  plansLoading: any,
-  plansError: any,
+  // loading: Map<date, bool>
+  plansLoading: PlansLoading,
+  // error: Map<date, bool>
+  plansError: PlansError,
+  // plan updating is for my plans only
+  // Map<date, bool>
+  planUpdating: any,
+  // plan update error is for my plans only
+  // Map<date, string | undefined>
+  planUpdateError: any,
+}
+
+type PlansLoading = {
+  dateFrom?: string,
+  dateTo?: string,
+  loading?: boolean,
+}
+
+type PlansError = {
+  dateFrom?: string,
+  dateTo?: string,
+  error?: string | null,
 }
 
 const initialState: PlanState = {
   plans: {},
   plansLoading: {},
   plansError: {},
+  planUpdating: {},
+  planUpdateError: {},
 }
 
 const planSlice = createSlice({
@@ -21,31 +48,39 @@ const planSlice = createSlice({
   extraReducers: builder => {
     builder
       .addCase(
-        fetchPlan.pending,
+        fetchPlans.pending,
         (state, action) => {
-          console.log('fetchPlan.pending')
-          const {date} = action.meta.arg
-          state.plansLoading[date] = true
-          state.plansError[date] = null
+          console.log('fetchPlans.pending')
+          const {dateFrom, dateTo} = action.meta.arg
+          state.plansLoading = {dateFrom, dateTo, loading: true}
+          state.plansError = {dateFrom, dateTo, error: null}
         }
       )
       .addCase(
-        fetchPlan.fulfilled,
+        fetchPlans.fulfilled,
         (state, action) => {
-          console.log(`fetchPlan.fulfilled - ${JSON.stringify(action.payload)}`)
-          const {date} = action.meta.arg
-          state.plansLoading[date] = false
-          state.plansError[date] = null
-          state.plans[date] = action.payload
+          console.log(`fetchPlans.fulfilled - ${JSON.stringify(action.payload)}`)
+          const {dateFrom, dateTo} = action.meta.arg
+          state.plansLoading = {dateFrom, dateTo, loading: false}
+          state.plansError = {dateFrom, dateTo, error: null}
+
+          // we have array of plans
+          // need to create structure Map<date, Map<userId, Plan>>
+          state.plans = {}
+          action.payload.forEach(plan => {
+            state.plans[plan.date] = {
+              [plan.userId]: plan
+            }
+          })
         }
       )
       .addCase(
-        fetchPlan.rejected,
+        fetchPlans.rejected,
         (state, action) => {
-          const {date} = action.meta.arg
-          console.log(`fetchPlan.rejected - error code - ${JSON.stringify(action)}`)
-          state.plansLoading[date] = false
-          state.plansError[date] = action.payload?.message
+          console.log(`fetchPlans.rejected - error code - ${JSON.stringify(action)}`)
+          const {dateFrom, dateTo} = action.meta.arg
+          state.plansLoading = {dateFrom, dateTo, loading: false}
+          state.plansError = {dateFrom, dateTo, error: action.payload?.message}
         }
       )
       .addCase(
@@ -53,8 +88,8 @@ const planSlice = createSlice({
         (state, action) => {
           console.log('createPlan.pending')
           const {date} = action.meta.arg.plan
-          state.plansLoading[date] = true
-          state.plansError[date] = null
+          state.planUpdating[date] = true
+          state.planUpdateError[date] = null
         }
       )
       .addCase(
@@ -62,9 +97,16 @@ const planSlice = createSlice({
         (state, action) => {
           console.log(`createPlan.fulfilled - ${JSON.stringify(action.payload)}`)
           const {date} = action.meta.arg.plan
-          state.plansLoading[date] = false
-          state.plansError[date] = null
-          state.plans[date] = action.payload
+          state.planUpdating[date] = false
+          state.planUpdateError[date] = null
+
+          // we received plan in payload
+          const plan: Plan = action.payload
+          if (!state.plans[date]) {
+            state.plans[date] = {}
+          }
+          state.plans[date][plan.userId] = plan
+
         }
       )
       .addCase(
@@ -72,8 +114,8 @@ const planSlice = createSlice({
         (state, action) => {
           console.log(`createPlan.rejected - ${JSON.stringify(action.payload)}`)
           const {date} = action.meta.arg.plan
-          state.plansLoading[date] = false
-          state.plansError[date] = action.payload?.message
+          state.planUpdating[date] = false
+          state.planUpdateError[date] = action.payload?.message
         }
       )
       .addCase(
@@ -81,8 +123,8 @@ const planSlice = createSlice({
         (state, action) => {
           console.log('updatePlan.pending')
           const {date} = action.meta.arg
-          state.plansLoading[date] = true
-          state.plansError[date] = null
+          state.planUpdating[date] = true
+          state.planUpdateError[date] = null
         }
       )
       .addCase(
@@ -90,9 +132,13 @@ const planSlice = createSlice({
         (state, action) => {
           console.log(`updatePlan.fulfilled - ${JSON.stringify(action.payload)}`)
           const {date} = action.meta.arg
-          state.plansLoading[date] = false
-          state.plansError[date] = null
-          state.plans[date] = action.payload
+
+          state.planUpdating[date] = false
+          state.planUpdateError[date] = null
+
+          // we received plan in payload
+          const plan: Plan = action.payload
+          state.plans[date][plan.userId] = plan
         }
       )
       .addCase(
@@ -100,17 +146,19 @@ const planSlice = createSlice({
         (state, action) => {
           console.log(`updatePlan.rejected - ${JSON.stringify(action.payload)}`)
           const {date} = action.meta.arg
-          state.plansLoading[date] = false
-          state.plansError[date] = action.payload?.message
+          state.planUpdating[date] = false
+          state.planUpdateError[date] = action.payload?.message
         }
       )
   }
 })
 
-export const planSelectors = {
-  plan: (state: ReduxStore) => state.plan.plans,
-  planLoading: (state: ReduxStore) => state.plan.plansLoading,
-  planError: (state: ReduxStore) => state.plan.plansError,
+export const plansSelectors = {
+  plans: (state: ReduxStore) => state.plan.plans,
+  plansLoading: (state: ReduxStore) => state.plan.plansLoading,
+  plansError: (state: ReduxStore) => state.plan.plansError,
+  planUpdating: (state: ReduxStore) => state.plan.planUpdating,
+  planUpdateError: (state: ReduxStore) => state.plan.planUpdateError,
 }
 
 export default planSlice.reducer
