@@ -17,11 +17,16 @@ export const last = <T>(list: Array<T>): T | null => {
   return list[list.length - 1]
 
 }
-export const replaceWhere = <T>(
+
+export const addOrReplaceWhere = <T>(
   list: Array<T>,
   condition: (o: T) => boolean,
   objectToAdd: T
 ): Array<T> => {
+  if (!list || !list.length || !objectToAdd) {
+    return list
+  }
+
   const innerList = [...list].filter(o => !condition(o));
   innerList.push(objectToAdd)
   return innerList
