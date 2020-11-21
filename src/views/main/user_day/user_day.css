@@ -1,0 +1,32 @@
+.day {
+  margin-top: 10px;
+  margin-left: 10px;
+  width: 300px;
+  min-height: 100px;
+  border: none !important;
+  padding-bottom: 5px;
+}
+
+.top_stub {
+  margin-top: 5px;
+}
+
+.day_empty {
+  margin-top: 10px;
+  margin-left: 10px;
+  background-color: #dedede !important;
+  border-color: rgba(0, 0, 0, 0.0) !important;
+}
+
+.date_title {
+  margin: 16px 20px 0 16px;
+}
+
+.action_button {
+  font-family: "Open Sans", serif !important;
+}
+
+.placeholder {
+  color: #ddd;
+  margin: 20px;
+}
