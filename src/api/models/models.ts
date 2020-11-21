@@ -25,12 +25,17 @@ export type Task = {
   azureId?: number;
   azureState?: TaskState;
   azureUrl?: string;
+  azureOrganizationName/*?*/: string;
+  azureProjectName/*?*/: string;
 };
 
 export type Plan = {
   id?: string,
   entries: Array<PlanEntry>,
   date: string,
+  azureOrganizationName: string;
+  azureProjectName: string;
+  userId: string;
 }
 
 export type PlanEntry = {
