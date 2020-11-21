@@ -83,16 +83,16 @@ export default function TasksList(props: TasksListProps) {
     {innerTasks.map(t => <TaskItem
       task={t}
       state='created'
-      onDeletePressed={onDeletePressed}
+      onDelete={onDeletePressed}
       date=''
       onStateChanged={(s: any) => {
       }}
-      showState={false}
       stateChanging={false}
       taskInNextPlan={false}
       onCopyToNexPlanPressed={() => {
 
       }}
+      allowChangeState
     />)}
 
     {listStatus === ListStatus.planning && <div style={{marginLeft: 10, marginRight: 10}}>
