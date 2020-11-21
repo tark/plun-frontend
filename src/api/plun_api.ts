@@ -105,10 +105,8 @@ export const planTasks = async (tasks: Array<Task>) => {
 
 export const createPlan = async (
   plan: Plan,
-  organizationName: string,
-  projectName: string,
 ): Promise<Plan> => {
-  const result = await post('plan', {plan, organizationName, projectName})
+  const result = await post('plan', {plan/*, organizationName, projectName*/})
   console.log(`api - createPlan - ${result}`)
   return result
 }
@@ -119,7 +117,11 @@ export const updatePlan = async (plan: Plan) => {
   return result
 }
 
-export const getPlan = async (date: string, organizationName: string, projectName: string): Promise<Plan> => {
+export const getPlan = async (
+  organizationName: string,
+  projectName: string,
+  date: string
+): Promise<Plan> => {
   console.log(`getPlan - date - ${date}`)
   const result = await get('plan', {
     organizationName,
@@ -129,12 +131,30 @@ export const getPlan = async (date: string, organizationName: string, projectNam
   return result
 }
 
+export const getPlans = async (
+  organizationName: string,
+  projectName: string,
+  dateFrom: string,
+  dateTo: string,
+): Promise<Array<Plan>> => {
+  console.log(`getPlans - ${dateFrom}, ${dateTo}`)
+  return get('plans', {
+    organizationName,
+    projectName,
+    dateFrom,
+    dateTo,
+  })
+}
+
 /**
  * @deprecated use [getPlan] instead
  * @param organizationName
  * @param projectName
  */
-export const getPlanForToday = async (organizationName: string, projectName: string): Promise<Plan> => {
+export const getPlanForToday = async (
+  organizationName: string,
+  projectName: string
+): Promise<Plan> => {
   const result = await get('plan', {
     organizationName,
     projectName,
@@ -148,7 +168,10 @@ export const getPlanForToday = async (organizationName: string, projectName: str
  * @param organizationName
  * @param projectName
  */
-export const getPreviousNearestPlan = async (organizationName: string, projectName: string): Promise<Plan> => {
+export const getPreviousNearestPlan = async (
+  organizationName: string,
+  projectName: string
+): Promise<Plan> => {
   const result = await get('private/plan', {
     organizationName,
     projectName,
@@ -160,8 +183,9 @@ export const deleteTask = async (task: Task) => {
   return del('private/plan', {taskId: task.id})
 }
 
-export const updateTask = async (task: Task) => {
-  return patch('api - plan', {task})
+export const getUsers = async (organizationName: string, projectName: string) => {
+  console.log(`getUsers - ${organizationName}, ${projectName}`)
+  return get('users', {organizationName, projectName})
 }
 
 // ----------
