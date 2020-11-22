@@ -29,10 +29,10 @@ jobs:
           command: ssh circleci@$DEPLOY_SERVER 'cd /var/www/html/plun-frontend && git pull'
       - run:
           name: Install dependencies
-          command: ssh circleci@$DEPLOY_SERVER 'cd /var/www/html/plun-frontend && npm install'
+          command: ssh circleci@$DEPLOY_SERVER 'cd /var/www/html/plun-frontend && yarn install'
       - run:
           name: Deploy
-          command: ssh circleci@$DEPLOY_SERVER 'cd /var/www/html/plun-frontend && npm run build'
+          command: ssh circleci@$DEPLOY_SERVER 'cd /var/www/html/plun-frontend && yarn build'
 
 workflows:
   build-and-test:
