@@ -44,6 +44,12 @@ export default function Main(props: any) {
     dispatch(setError(null))
   }
 
+  console.log(`Main - id - ${process.env.REACT_APP_AZURE_APP_ID}`)
+  console.log(`Main - secret 1 - ${process.env.REACT_APP_AZURE_APP_SECRET}`)
+  console.log(`Main - secret 2 - ${process.env.REACT_APP_AZURE_CLIENT_SECRET}`)
+  console.log(`Main - callback url - ${process.env.REACT_APP_AZURE_CALLBACK_URL}`)
+  console.log(`Main - ----`)
+
   return <div className='main'>
     <Drawer
       className='drawer'
