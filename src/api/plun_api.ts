@@ -50,7 +50,7 @@ export const configureApi = () => {
 
 }
 
-const baseApiUrl = 'http://localhost:3001';
+const apiHost = process.env.API_HOST
 
 /**
  * Ask server to auth by given code.
@@ -192,25 +192,25 @@ export const getUsers = async (organizationName: string, projectName: string) =>
 
 const post = async (endpoint: string, body?: any) => {
   console.log(`api - post - ${JSON.stringify(body)}`)
-  const result = await axios.post(`${baseApiUrl}/${endpoint}`, body)
+  const result = await axios.post(`${apiHost}/${endpoint}`, body)
   return checkAndReturn(result)
 }
 
 const del = async (endpoint: string, body: any) => {
   console.log('api - del')
-  const result = await axios.delete(`${baseApiUrl}/${endpoint}`, {data: body})
+  const result = await axios.delete(`${apiHost}/${endpoint}`, {data: body})
   return checkAndReturn(result)
 }
 
 const patch = async (endpoint: string, body: any) => {
   console.log('api - patch')
-  const result = await axios.patch(`${baseApiUrl}/${endpoint}`, body)
+  const result = await axios.patch(`${apiHost}/${endpoint}`, body)
   return checkAndReturn(result)
 }
 
 const get = async (endpoint: string, params?: any): Promise<any> => {
-  console.log(`api - get - ${baseApiUrl}/${endpoint}, ${JSON.stringify(params)}`)
-  const result: AxiosResponse = await axios.get(`${baseApiUrl}/${endpoint}`, {params})
+  console.log(`api - get - ${apiHost}/${endpoint}, ${JSON.stringify(params)}`)
+  const result: AxiosResponse = await axios.get(`${apiHost}/${endpoint}`, {params})
   return checkAndReturn(result)
 
 }
