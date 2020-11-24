@@ -9,7 +9,6 @@ import './landing.css'
 import Button from '@material-ui/core/Button';
 import Roulette from './Roulette';
 import ActionButton from './action_button/ActionButton';
-import TaskSelector from './task_selector';
 
 const theme = createMuiTheme({
   palette: {
