@@ -77,7 +77,7 @@ export const Login: React.FC = () => {
 
   const devopsIcon = () => {
     return <img
-      src='https://localhost:3000/devops_logo_transparent.png'
+      src={`${process.env.REACT_APP_HOST}/devops_logo_transparent.png`}
       width={20}
       alt='Devops logo'
     />
