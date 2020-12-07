@@ -1,8 +1,8 @@
 import React, {useEffect} from 'react'
 import {useDispatch, useSelector} from 'react-redux'
-import './main.css';
 import Drawer from '@material-ui/core/Drawer';
 import List from '@material-ui/core/List';
+import {Skeleton} from '@material-ui/lab';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
@@ -16,9 +16,9 @@ import Plans from './Plans';
 import {errorSelectors} from '../../store/slices/error_slice';
 import {setError} from '../../store/slices/error_slice';
 import {profileSelectors} from '../../store/slices/profile_slice';
+import './main.css';
 
 export default function Main(props: any) {
-
   const dispatch = useDispatch()
 
   const profile = useSelector(profileSelectors.profile)
@@ -44,12 +44,6 @@ export default function Main(props: any) {
     dispatch(setError(null))
   }
 
-  console.log(`Main - id - ${process.env.REACT_APP_AZURE_APP_ID}`)
-  console.log(`Main - secret 1 - ${process.env.REACT_APP_AZURE_APP_SECRET}`)
-  console.log(`Main - secret 2 - ${process.env.REACT_APP_AZURE_CLIENT_SECRET}`)
-  console.log(`Main - callback url - ${process.env.REACT_APP_AZURE_CALLBACK_URL}`)
-  console.log(`Main - ----`)
-
   return <div className='main'>
     <Drawer
       className='drawer'
@@ -57,17 +51,23 @@ export default function Main(props: any) {
       classes={{paper: 'drawerPaper'}}
       anchor="left">
 
-      <List>
+      <List disablePadding>
 
-        {!profile && <Loader/>}
+        {!profile && <div className='line-skeleton-container'>
+          <Skeleton className='line-skeleton'/>
+        </div>}
 
-        {profile && <ListItem button disableGutters key={profile.name}>
-          <ListItemText primary={profile.name}/>
+        {profile && <ListItem button key={profile.name}>
+          <ListItemText
+            disableTypography
+            primary={<div><b>{profile.name}</b></div>}/>
         </ListItem>}
 
         <Divider/>
 
-        {!profile && <Loader/>}
+        {!profile && <div className='line-skeleton-container'>
+          <Skeleton className='line-skeleton'/>
+        </div>}
 
         {profile && <OrganizationsList/>}
 
