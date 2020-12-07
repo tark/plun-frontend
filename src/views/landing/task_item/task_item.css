@@ -1,8 +1,9 @@
 .task {
   font-size: 1rem;
-  padding: 6px 4px 6px 8px;
+  padding: 6px 10px 6px 8px;
   display: flex;
   min-height: 36px;
+  position: relative;
 }
 
 .task:hover {
@@ -50,6 +51,14 @@ a {
   align-items: center;
   justify-content: center;
   font-size: 12px;
+}
+
+.menu-button {
+  position: absolute;
+  color: #bbb;
+  right: 6px;
+  top: -2px;
+  background-color: #f2f3f4;
 }
 
 .icon-bullet {
