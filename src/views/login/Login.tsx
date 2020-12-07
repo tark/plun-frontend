@@ -56,7 +56,7 @@ export const Login: React.FC = () => {
     console.log('authByAuthCode')
     const appId = process.env.REACT_APP_AZURE_APP_ID
     const state = 'User name'
-    const scope = 'vso.work_full'
+    const scope = 'vso.work_full vso.graph'
     const callbackUrl = process.env.REACT_APP_AZURE_CALLBACK_URL
     const authUrl = new URL('https://app.vssps.visualstudio.com/oauth2/authorize')
 
