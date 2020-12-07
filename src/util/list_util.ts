@@ -31,3 +31,18 @@ export const addOrReplaceWhere = <T>(
   innerList.push(objectToAdd)
   return innerList
 }
+
+export const moveToStart = <T>(list: Array<T> | null, condition: (e: T) => boolean): Array<T> => {
+  if (!list) {
+    return []
+  }
+  const result = [...list]
+  const objectToMove = result.find(condition)
+  if (!objectToMove) {
+    return list
+  }
+  const myIndex = result.indexOf(objectToMove)
+  result.splice(myIndex, 1);
+  result.unshift(objectToMove);
+  return result
+}
