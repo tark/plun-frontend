@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import queryString from 'querystring'
 import {useDispatch, useSelector} from 'react-redux';
 import {useHistory} from 'react-router-dom';
@@ -12,13 +12,26 @@ export const AzureAuthCallback: React.FC = () => {
   const history = useHistory()
   const authError = useSelector(profileSelectors.authError)
   const profile = useSelector(profileSelectors.profile)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     // on start - get the code from url and auth
     const search = window.location.search.replace('?', '')
-    console.log(`search - ${search}`)
-    const {code} = queryString.parse(search)
-    dispatch(auth(code?.toString() ?? ''))
+
+    const {code, error: codeError} = queryString.parse(search)
+
+    if (codeError) {
+      setError(codeError.toString())
+      return
+    }
+
+    if (code) {
+      dispatch(auth(code.toString()))
+      return
+    }
+
+    setError('Something gonna wrong')
+
   }, [])
 
   useEffect(() => {
@@ -34,12 +47,17 @@ export const AzureAuthCallback: React.FC = () => {
   }, [authError])
 
   return <div className='login'>
-    <div className='redirect-message-container'>
+    {!error && <div className='redirect-message-container'>
       <div className='login-message mb-3'>
         Logging in...
       </div>
       <Loader/>
-    </div>
+    </div>}
+
+    {error && <div className='login-error-message'>
+      Error: {error}
+    </div>}
+
   </div>
 }
 
