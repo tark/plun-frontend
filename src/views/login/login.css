@@ -13,6 +13,11 @@
   color: #222;
 }
 
+.login-error-message {
+  font-size: 1.5rem;
+  color: darkred;
+}
+
 .redirect-message-container {
   display: flex;
   flex-direction: column;
