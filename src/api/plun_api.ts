@@ -181,9 +181,9 @@ export const deleteTask = async (task: Task) => {
   return del('private/plan', {taskId: task.id})
 }
 
-export const getUsers = async (organizationName: string, projectName: string) => {
-  console.log(`getUsers - ${organizationName}, ${projectName}`)
-  return get('users', {organizationName, projectName})
+export const getUsers = async (organizationName: string) => {
+  console.log(`getUsers - ${organizationName}`)
+  return get('users', {organizationName})
 }
 
 // ----------
@@ -210,7 +210,6 @@ const get = async (endpoint: string, params?: any): Promise<any> => {
   console.log(`api - get - ${apiHost()}/${endpoint}, ${JSON.stringify(params)}`)
   const result: AxiosResponse = await axios.get(`${apiHost()}/${endpoint}`, {params})
   return checkAndReturn(result)
-
 }
 
 const apiHost = () => {
