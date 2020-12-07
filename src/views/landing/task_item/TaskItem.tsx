@@ -1,12 +1,12 @@
 import React, {useState} from 'react'
-import {Divider, MenuItem} from '@material-ui/core';
+import {Divider, IconButton, MenuItem} from '@material-ui/core';
 import './task_item.css';
 import classnames from 'classnames';
 import moment from 'moment';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import DeleteIcon from '@material-ui/icons/Delete';
-import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
+import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import {
   faHammer,
   faCheckSquare,
@@ -18,6 +18,7 @@ import {IconDefinition} from '@fortawesome/fontawesome-common-types';
 import Menu from '@material-ui/core/Menu';
 import {red} from '@material-ui/core/colors';
 import {useSelector} from 'react-redux';
+import {makeStyles} from '@material-ui/styles';
 import {Plan, Task, TaskState} from '../../../api/models/models';
 import {DATE_FORMAT, TaskStatus} from '../../../config/constants';
 import {plansSelectors} from '../../../store/slices/plan_slice';
@@ -45,11 +46,6 @@ export type Option = {
 
 const options: Array<Option> = [
   {
-    state: 'created',
-    icon: '-',
-    label: 'Created'
-  },
-  {
     state: 'progress',
     icon: '🚧',
     label: 'Progress'
@@ -71,6 +67,14 @@ const options: Array<Option> = [
   },
 ]
 
+const useStyles = makeStyles({
+  selected: {
+    fontWeight: 'bold',
+    backgroundColor: 'rgba(0, 0, 0, 0.05) !important',
+  },
+});
+
+
 export default function TaskItem(props: TaskItemProps) {
 
   const {
@@ -83,26 +87,34 @@ export default function TaskItem(props: TaskItemProps) {
     onDelete,
     allowChangeState,
   } = props
-
   const {name, azureUrl} = task
   const [showMenuButton, setShowMenuButton] = useState(false)
-  const [menuAnchor, setMenuAnchor] = useState<HTMLDivElement | null>(null);
+  const [menuAnchor, setMenuAnchor] = useState<HTMLButtonElement | null>(null);
   const profile = useSelector(profileSelectors.profile)
   const plan: Plan = (useSelector(plansSelectors.plans)[date] ?? {})[profile?.id ?? '']
+  const classes = useStyles();
 
   const handleMenuClose = () => {
     setMenuAnchor(null);
   };
 
   const handleMenuItemClick = (event: any, option: any) => {
+    if (state === option.state) {
+      return
+    }
     onStateChanged(task, option.state);
-    setMenuAnchor(null);
+    setMenuAnchor(null)
   };
 
   const handleDeleteClick = (event: any) => {
     onDelete(task);
     setMenuAnchor(null);
   };
+
+  const handlePlanForTodayClick = (event: any) => {
+    onCopyToNexPlanPressed(task)
+    setMenuAnchor(null)
+  }
 
   const titleClipped = () => {
 
@@ -194,11 +206,13 @@ export default function TaskItem(props: TaskItemProps) {
       {!azureUrl && name}
     </div>
 
-    {showMenuButton && <div
-      className='status-icon'
-      onClick={e => setMenuAnchor(e.currentTarget)}>
-      <MoreVertIcon className='more-icon'/>
-    </div>}
+    {showMenuButton && <div className='menu-button'>
+      <IconButton
+        onClick={e => setMenuAnchor(e.currentTarget)}
+        color='inherit'>
+        <MoreVertIcon fontSize='small'/>
+      </IconButton>
+    </div> }
 
     <Menu
       disableAutoFocusItem
@@ -212,7 +226,10 @@ export default function TaskItem(props: TaskItemProps) {
         <MenuItem
           disableGutters
           key={option.label}
-          disabled={state === option.state}
+          selected={state === option.state}
+          classes={{
+            selected: classes.selected,
+          }}
           onClick={(event) => handleMenuItemClick(event, option)}>
           <div className='menu-item'>
             <div className='menu-icon'>
@@ -228,10 +245,10 @@ export default function TaskItem(props: TaskItemProps) {
       {!today() && <MenuItem
         disableGutters
         key='delete'
-        onClick={_ => onCopyToNexPlanPressed(task)}>
+        onClick={handlePlanForTodayClick}>
         <div className='menu-item'>
           <div className='menu-icon'>
-            <ArrowDownwardIcon style={{fontSize: 15}}/>
+            <ArrowUpwardIcon style={{fontSize: 15}}/>
           </div>
           Plan for today
         </div>
