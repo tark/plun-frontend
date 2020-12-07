@@ -1,6 +1,6 @@
 import {createSlice} from '@reduxjs/toolkit'
 import {ReduxStore} from '../index';
-import { User} from '../../api/models/models';
+import {User} from '../../api/models/models';
 import {fetchUsers} from '../../services/users_service';
 
 type UsersState = {
@@ -9,8 +9,20 @@ type UsersState = {
   usersError: string | undefined | null,
 }
 
+const emptyUser = {
+  id: '',
+  azureProfileId: '',
+  name: '',
+  email: '',
+}
+
 const initialState: UsersState = {
-  users: null,
+  users: [
+    emptyUser,
+    emptyUser,
+    emptyUser,
+    emptyUser,
+  ],
   usersLoading: false,
   usersError: null,
 }
@@ -35,7 +47,9 @@ const usersSlice = createSlice({
           console.log(`fetchUsers.fulfilled - ${JSON.stringify(action.payload)}`)
           state.usersLoading = false
           state.usersError = null
-          state.users = action.payload
+          const users = action.payload
+          users.sort()
+          state.users = users
         }
       )
       .addCase(
@@ -48,6 +62,7 @@ const usersSlice = createSlice({
       )
   }
 })
+
 
 export const usersSelectors = {
   users: (state: ReduxStore) => state.users.users,
