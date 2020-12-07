@@ -4,7 +4,6 @@ import {User} from "../api/models/models";
 
 export type FetchUsersParams = {
   organizationName: string,
-  projectName: string,
 }
 
 interface ThunkError {
@@ -27,9 +26,9 @@ export const fetchUsers = createAsyncThunk<Array<User>, FetchUsersParams, ThunkA
   async (params, {rejectWithValue}) => {
     console.log(`fetchUsers`)
     try {
-      const {organizationName, projectName} = params
+      const {organizationName} = params
       console.log(`fetch users`)
-      return <Array<User>>(await api.getUsers(organizationName, projectName))
+      return <Array<User>>(await api.getUsers(organizationName))
     } catch (e) {
       console.log(`fetch users - error - ${JSON.stringify(e.response)}`)
       return rejectWithValue({
