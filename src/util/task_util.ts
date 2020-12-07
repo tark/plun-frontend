@@ -5,7 +5,7 @@ export const iconByTaskState = (state?: TaskState): string => {
   switch (state) {
     case 'created':
     default:
-      return '🔘';
+      return '';
     case 'done':
       return '✅';
     case 'progress':
