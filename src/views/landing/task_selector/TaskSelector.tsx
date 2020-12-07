@@ -128,7 +128,7 @@ export default function TaskSelector(props: TaskSelectorProps) {
             <input
               {...params.inputProps}
               type="text"
-              placeholder='+Add Task'
+              placeholder='Type task name or number'
             />
           </div>
         )}
