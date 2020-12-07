@@ -2,18 +2,27 @@ import React, {useEffect} from 'react'
 import './main.css';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import BusinessIcon from '@material-ui/icons/Business';
 import Divider from '@material-ui/core/Divider';
 import {useDispatch, useSelector} from 'react-redux';
+import {makeStyles} from '@material-ui/styles';
+import {Skeleton} from '@material-ui/lab';
 import ProjectsList from './ProjectsList';
-import Loader from '../components/loader';
 import {fetchOrganizations} from '../../services/profile_service';
 import {profileSelectors, selectOrganization} from '../../store/slices/profile_slice';
 
+const useStyles = makeStyles({
+  selected: {
+    backgroundColor: 'red',
+  },
+  root: {
+    color: '#000',
+  },
+});
+
 export default function OrganizationsList(props: any) {
 
+  const classes = useStyles();
   const dispatch = useDispatch()
   const organizations = useSelector(profileSelectors.organizations)
   const organizationsLoading = useSelector(profileSelectors.organizationsLoading)
@@ -32,7 +41,9 @@ export default function OrganizationsList(props: any) {
   return (
     <div>
 
-      {organizationsLoading && <Loader/>}
+      {organizationsLoading && <div className='line-skeleton-container'>
+        <Skeleton className='line-skeleton'/>
+      </div>}
 
       {organizations && !organizations.length && (
         <div>No projects for this organization</div>
@@ -40,13 +51,14 @@ export default function OrganizationsList(props: any) {
 
       {organizations && organizations.length && organizations.map(o => (
         <div key={o.id}>
-          <List>
+          <List
+            disablePadding>
             <ListItem
-              button
-              key='project'
-              selected={selectedOrganization?.azureId === o.azureId}
-              onClick={() => dispatch(selectOrganization(o))}>
-              <ListItemIcon><BusinessIcon/></ListItemIcon>
+              key='organization'
+              classes={{
+                selected: classes.selected,
+                root: classes.root,
+              }}>
               <ListItemText primary={o.name}/>
             </ListItem>
             <ProjectsList organization={o}/>
