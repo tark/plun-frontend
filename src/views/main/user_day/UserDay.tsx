@@ -1,7 +1,15 @@
-import React from 'react';
+import React, {useRef, useState} from 'react';
 import moment from 'moment';
-import {Card, fade, Theme} from '@material-ui/core';
+import {
+  Button,
+  Dialog, DialogActions,
+  DialogContent,
+  DialogTitle,
+  fade, IconButton,
+  Theme
+} from '@material-ui/core';
 import ContentLoader from 'react-content-loader';
+import ShareIcon from '@material-ui/icons/Share';
 import {useDispatch, useSelector} from 'react-redux';
 import classNames from 'classnames';
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -14,6 +22,8 @@ import {DATE_FORMAT} from '../../../config/constants';
 import {updatePlan} from '../../../services/plan_service';
 import {profileSelectors} from '../../../store/slices/profile_slice';
 import {plansSelectors} from '../../../store/slices/plan_slice';
+import {iconByTaskState} from '../../../util/task_util';
+import {timeout} from '../../../util/async_util';
 
 interface UserDayProps {
   date: string,
@@ -44,14 +54,15 @@ const BorderLinearProgress = withStyles((theme: Theme) => createStyles(
 export default function UserDay(props: UserDayProps) {
 
   const {date, user, onTaskSelected, onCopyToNextPlan} = props
-
+  const ref = useRef(null);
   const profile = useSelector(profileSelectors.profile)
   const dispatch = useDispatch()
-  const showTaskSelector = moment().format(DATE_FORMAT) === date && user.id === profile?.id
+  const showTaskSelector = moment().format(DATE_FORMAT) === date && user.email === profile?.email
   const plans = useSelector(plansSelectors.plans)
   const plan: Plan = (plans[date] ?? {})[user.id]
   const planLoadingObject = useSelector(plansSelectors.plansLoading)
   const planUpdating = useSelector(plansSelectors.planUpdating)[date]
+  const [shareDialogOpened, setShareDialogOpened] = useState(false)
 
   const {entries} = plan || {}
 
@@ -89,7 +100,6 @@ export default function UserDay(props: UserDayProps) {
     //return entriesNext?.some((e1) => e1.taskId === entry.taskId) ?? false
     return false;
   }
-
 
   const handleTaskSelected = async (task: Task) => {
     if (onTaskSelected) {
@@ -133,11 +143,68 @@ export default function UserDay(props: UserDayProps) {
     return null
   }
 
-  return <Card
-    className={classNames('day', {day_empty: !entries || !entries.length})}
-    variant={!entries || !entries.length ? 'outlined' : 'elevation'}>
+  const onShareClick = async () => {
+    setShareDialogOpened(true)
+    await timeout(1000)
+    copyElementToClipboard(ref.current)
+  }
 
-    {planUpdating && user.id === profile?.id && <BorderLinearProgress/>}
+  const onShareDialogClose = async () => {
+    setShareDialogOpened(false)
+  }
+
+  function copyElementToClipboard(node: Node | null) {
+
+    if (!node) {
+      return
+    }
+
+    // eslint-disable-next-line no-unused-expressions
+    window?.getSelection()?.removeAllRanges();
+    const range = document.createRange();
+    range.selectNode(node);
+    // eslint-disable-next-line no-unused-expressions
+    window?.getSelection()?.addRange(range);
+    document.execCommand('copy');
+    // eslint-disable-next-line no-unused-expressions
+    window?.getSelection()?.removeAllRanges();
+  }
+
+  const planToMessage = (planParam: Plan | null, showStates?: boolean) => {
+
+    if (!planParam) {
+      return <div/>
+    }
+
+    return <div style={{fontSize: 14}}>
+      <br/>
+      <div>
+        <b>{moment(planParam.date).format('dddd')}</b>
+        <span style={{color: '#bbb'}}>
+          {', '}
+          {moment(planParam.date).format('MMM D')}
+        </span>
+        {planParam.entries.map(e => {
+          const {task: {azureUrl, name}, taskState} = e
+          const icon = ` ${iconByTaskState(taskState)}`
+          const nameElement = azureUrl ? <a href={azureUrl}>{name}</a> : name
+
+          return <div>
+            {'-'}
+            {icon}
+            &nbsp;
+            {nameElement}
+          </div>
+
+        })}
+        {/*<p>- {iconByTaskState(taskState)}<a href='${azureUrl}'>${name}</a></p>*/}
+      </div>
+    </div>
+  }
+
+  return <div className={classNames('day', {day_empty: !entries || !entries.length})}>
+
+    {planUpdating && user.email === profile?.email && <BorderLinearProgress/>}
 
     <div className='top_stub'/>
 
@@ -180,6 +247,36 @@ export default function UserDay(props: UserDayProps) {
 
     {showTaskSelector && <TaskSelector onTaskSelect={handleTaskSelected}/>}
 
-  </Card>
+    {showTaskSelector && <div className='share-button-container'>
+      <IconButton
+        aria-label="Share"
+        onClick={onShareClick}
+        color='inherit'>
+        <ShareIcon fontSize='small'/>
+      </IconButton>
+    </div>}
+
+    <Dialog
+      disablePortal
+      open={shareDialogOpened}
+      onClose={onShareDialogClose}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+    >
+      <DialogTitle id="alert-dialog-title">Copied to clipboard</DialogTitle>
+      <DialogContent ref={ref}>
+        <div>
+          {planToMessage(previousPlan())}
+          {planToMessage(plan)}
+        </div>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onShareDialogClose} color="primary" autoFocus>
+          Ok
+        </Button>
+      </DialogActions>
+    </Dialog>
+
+  </div>
 
 }
