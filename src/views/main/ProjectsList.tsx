@@ -2,10 +2,10 @@ import React, {useEffect} from 'react'
 import './main.css';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import {useDispatch, useSelector} from 'react-redux';
-import Loader from '../components/loader';
+import {makeStyles} from '@material-ui/styles';
+import {Skeleton} from '@material-ui/lab';
 import {Organization} from '../../api/models/models';
 import {profileSelectors, selectProject} from '../../store/slices/profile_slice';
 import {fetchProjects} from '../../services/profile_service';
@@ -14,7 +14,14 @@ interface ProjectsListProps {
   organization: Organization;
 }
 
+const useStyles = makeStyles({
+  selected: {
+    fontWeight: 'bold',
+  },
+});
+
 export default function ProjectsList(props: ProjectsListProps) {
+  const classes = useStyles();
   const dispatch = useDispatch()
   const projects = useSelector(profileSelectors.projects)
   const projectsLoading = useSelector(profileSelectors.projectsLoading)
@@ -39,22 +46,29 @@ export default function ProjectsList(props: ProjectsListProps) {
   return (
     <div>
 
-      {projectsLoading && <Loader/>}
+      {projectsLoading && <div className='line-skeleton-container'>
+        <Skeleton className='line-skeleton'/>
+      </div>}
 
       {projects && !projects.length && (
         <div>No projects for this organization</div>
       )}
 
       {projects && projects.length && projects.map(p => (
-        <List key={p.id}>
+        <List key={p.id} disablePadding>
           <ListItem
             button
             key={`${p.id}-item`}
             onClick={(e) => dispatch(selectProject(p))}
             selected={selectedProject?.azureId === p.azureId}
+            classes={{
+              selected: classes.selected,
+            }}
           >
-            <ListItemIcon/>
-            <ListItemText primary={p.name}/>
+            <ListItemText
+              disableTypography
+              primary={<div className='pl-4'>{p.name}</div>}
+            />
           </ListItem>
         </List>
       ))}
