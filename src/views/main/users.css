@@ -1,17 +1,26 @@
 .users {
   display: flex;
-  padding-left: 10px;
+  margin-left: 30px;
   position: sticky;
-  height: 56px;
-  min-height: 56px;
+  height: 48px;
+  min-height: 48px;
   align-items: center;
-  box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 1px -2px,
-  rgba(0, 0, 0, 0.14) 0px 2px 2px 0px,
-  rgba(0, 0, 0, 0.12) 0px 1px 5px 0px
+}
+
+.user {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .user_name {
-  width: 300px;
   font-weight: bold;
-  margin-left: 10px;
+  margin-left: 16px;
+}
+
+.user_skeleton {
+  height: 30px;
+  padding-right: 20px;
 }
