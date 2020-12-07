@@ -14,6 +14,7 @@
 
 .drawerPaper {
   width: 220px;
+  background-color: #eaeaea !important;
 }
 
 .main {
@@ -24,4 +25,23 @@
 
 .content {
   padding: 4px 20px 20px 20px;
+}
+
+.line-skeleton {
+  height: 30px !important;
+  width: 100%;
+}
+
+.line-skeleton-container {
+  height: 48px !important;
+  min-height: 48px !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 16px 0 16px;
+  width: 100%;
+}
+
+*:focus {
+  outline: none !important;
 }
