@@ -25,8 +25,8 @@ export type Task = {
   azureId?: number;
   azureState?: TaskState;
   azureUrl?: string;
-  azureOrganizationName/*?*/: string;
-  azureProjectName/*?*/: string;
+  azureOrganizationName: string;
+  azureProjectName: string;
 };
 
 export type Plan = {
