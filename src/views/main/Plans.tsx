@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react';
 import moment from 'moment';
 import {useDispatch, useSelector} from 'react-redux';
+import {Divider} from '@material-ui/core';
 import {DATE_FORMAT} from '../../config/constants';
 import {profileSelectors} from '../../store/slices/profile_slice';
 import {usersSelectors} from '../../store/slices/users_slice';
@@ -11,6 +12,7 @@ import UserDay from './user_day';
 import './plans.css';
 import {Plan, Task} from '../../api/models/models';
 import {setError} from '../../store/slices/error_slice';
+import {moveToStart} from '../../util/list_util';
 
 /**
  * Show plan for the given date
@@ -47,11 +49,11 @@ export default function Plans(props: any) {
 
   const dates = (): Array<string> => {
     const result = []
-    let lastDate = moment(dateFrom())
+    let lastDate = moment(dateTo())
     do {
       result.push(lastDate.format(DATE_FORMAT))
-      lastDate = lastDate.add(1, 'days')
-    } while (lastDate <= moment(dateTo()))
+      lastDate = lastDate.subtract(1, 'days')
+    } while (lastDate > moment(dateFrom()))
     return result
   }
 
@@ -114,21 +116,32 @@ export default function Plans(props: any) {
     <Users/>
 
     <div className='flex-grow-1' style={{overflow: 'scroll', paddingBottom: 160, width: '100%'}}>
-      {dates().map(date => <div className='mt-3'>
-
-        <div className='date_title'>
-          {thisWeek(date) && <b>{moment(date).format('dddd')}</b>}
-          {!thisWeek(date) && <b>{moment(date).format('MMM, D')}</b>}
-        </div>
+      {dates().map(date => <div>
 
         <div className='d-flex'>
-          {users?.map(user => <UserDay
-            date={date}
-            user={user}
-            onTaskSelected={addTaskToPlan}
-            onCopyToNextPlan={handleCopyToNextPlan}
-          />)}
+
+          <div className='date_title'>
+            {thisWeek(date) && <b>{moment(date).format('dddd')}</b>}
+            {!thisWeek(date) && <b>{moment(date).format('MMM, D')}</b>}
+
+          </div>
+
+          {moveToStart(users, u => u.email === profile?.email)?.map((user, i) => <div
+            className='d-flex'>
+            {i === 0 && <Divider orientation='vertical'/>}
+            <UserDay
+              date={date}
+              user={user}
+              onTaskSelected={addTaskToPlan}
+              onCopyToNextPlan={handleCopyToNextPlan}
+            />
+            <Divider orientation='vertical'/>
+
+          </div>)}
+
         </div>
+
+        <Divider style={{width: 'auto !important'}}/>
 
       </div>)}
     </div>
